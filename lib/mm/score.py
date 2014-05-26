@@ -5,12 +5,13 @@ scores quickly.
 """
 
 from . import *
-from .singleton import *
+from . import singleton as singleton
+
 
 _CODES= CODETABLE.CODES
 """A table mapping numeric codes to the tuple representation."""
 
-class score(object):
+class Score(object):
     """Class representing Mastermind scores."""
 
     def __init__(self, exact=None, approx=None):
@@ -84,25 +85,27 @@ class score(object):
             a = a + min(x, y)
 
         a = a - e
-        return score(exact=e, approx=a)
+        return Score(exact=e, approx=a)
 
 
 def _genscores():
     s = [0] * NSCORES
-    for e in range(0,NPOSITIONS+1):
-        for a in range(0,NPOSITIONS+1-e):
+    for e in range(0, NPOSITIONS+1):
+        for a in range(0, NPOSITIONS+1-e):
             i = encode_score(e, a)
             s[i] = (e, a)
     return tuple(s)
+
 
 def _genscoretable():
     return tuple(tuple(score.from_vectors(_CODES[c1], _CODES[c2]).value \
                            for c1 in range(0, NCODES)) \
                      for c2 in range(0, NCODES))
 
-class scoretable(object):
+
+class ScoreTable(object):
     """Precalculated scores."""
-    __metaclass__ = Singleton
+    __metaclass__ = singleton.Singleton
 
     def __init__(self):
         self.SCORES = _genscores()
@@ -151,9 +154,12 @@ class scoretable(object):
 
 
 SCORE_TABLE = None #scoretable()
-"""The single instance of :py:class:`.scoretable`."""
+"""The single instance of :py:class:`.ScoreTable`."""
 
 def initialize():
+    """Initialize global tables."""
+
     global SCORE_TABLE
-    SCORE_TABLE = scoretable()
+    SCORE_TABLE = ScoreTable()
+
 

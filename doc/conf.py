@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 #
-import sys
-import os
+
 import cloud_sptheme as csp
+
+import glob
+import logging
+import os
+import sys
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../lib'))
 
+print ">>> Clearing generated files."
+for g in glob.iglob('generated/*'):
+    os.remove(g)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom

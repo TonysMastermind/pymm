@@ -11,6 +11,7 @@ Modules:
    mm
    mm.score
    mm.singleton
+   mm.xforms
 
 
 Contents:

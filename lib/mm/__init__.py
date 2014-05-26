@@ -1,103 +1,64 @@
 # -*- python -*-
 """Encapsualtes algorithms and objects to solve MasterMind derived problems."""
 
-from mm.singleton import *
+from . import singleton as singleton
 
 import exceptions
 import logging
 
-NCOLORS       = 6
-"""Number of colors in the Master Mind game."""
+def initialize_logging(**kwargs):
+    """Initialize logging with defaults.
 
-NPOSITIONS    = 4
-"""Number of position in the Master Mind code."""
+    :param kwargs: arguments passed to :py:func:`logging.basicConfig`.
 
-NCODES        = NCOLORS ** NPOSITIONS
-"""Total number of possiuble codes in the game."""
-
-NSCORES       = (NPOSITIONS+1)*(NPOSITIONS+2)//2
-"""Total number of expressable scores (including the (exact=3, approx=1)
-invalid score)."""
-
-
-PERFECT_SCORE = 0
-"""The numeric value of the perfect score."""
-
-def initialize_logging(level=logging.DEBUG):
-    """initialize_logging(level=logging.DEBUG)
+    Defaults:
+      - format: ``%(asctime)s:%(name)s:%(levelname)s:%(message)s``
+      - level: :py:const:`logging.DEBUG`
     """
-    logging.basicConfig(format='%(asctime)s:%(name)s:%(levelname)s:%(message)s',
-                        level=level)
+    args = {
+        'format': '%(asctime)s:%(name)s:%(levelname)s:%(message)s',
+        'level': logging.DEBUG
+        }
+    args.update(kwargs)
+    logging.basicConfig(**args)
+
 
 class Exception(exceptions.Exception):
     """Exception class for this namespace."""
     pass
 
-def decode(c):
-    """Decodes an integer into a vector of color numbers.
 
-    :param c: numeric code to be decoded.
-    :return: tuple with :py:data:`.NPOSITIONS` color numbers.
-    """
-    if c < 0 or c >= NCODES:
-        raise Exception, "Out of range: code:%d, range:[%d, %d)" % \
-            (c, 0, NCODES)
-    v = []
-    t = c
-    for i in range(0, NPOSITIONS):
-        v.append(t % NCOLORS)
-        t = int(t // NCOLORS)
-    return tuple(v)
-
-def encode(v):
-    """Encodes a vector of color numbers into a numeric value.
-
-    :param v: vector of color numbers.
-    :return: an integer encoding of the code.
-    """
-    if len(v) != NPOSITIONS:
-        raise Exception, \
-            "Incorrect length:{}, required:{}, v:{}". \
-            format(len(v), NPOSITIONS, v)
-    c = 0
-    t = 1
-    for i in v:
-        if i < 0 or i >= NCOLORS:
-            raise Exception, \
-                "Out of range: peg:{}, range:[{}, {}); code:{}". \
-                format(i, 0, NCOLORS, v)
-        c = c + i*t
-        t = t * NCOLORS
-    return c
-
-def encode_score(e, a):
-    """Function that encodes a score into a numeric value.
-
-    .. warning::
-
-       does not validate inputs.
-
-    :param e: exact matches.
-    :param a: approximate matches.
-
-    :return: numeric encoding of the score.
-    """
-    return int((NPOSITIONS - e)*(NPOSITIONS - e + 1) // 2) + a
-
-
-class codetable(object):
+class CodeTable(object):
     """Lookup table mapping numeric codes to vectors of color numbers.
     A singleton class."""
-    __metaclass__ = Singleton
+    __metaclass__ = singleton.Singleton
+
+    NCOLORS = 6
+    """Number of colors in the Master Mind game."""
+
+    NPOSITIONS = 4
+    """Number of position in the Master Mind code."""
+
+    NCODES = NCOLORS ** NPOSITIONS
+    """Total number of possiuble codes in the game."""
+
+    NSCORES = (NPOSITIONS+1)*(NPOSITIONS+2)//2
+    """Total number of expressable scores (including the (exact=3, approx=1)
+    invalid score)."""
+
+
+    PERFECT_SCORE = 0
+    """The numeric value of the perfect score."""
+
 
     def __init__(self):
-        self.ALL = tuple(i for i in range(0, NCODES))
+        self.ALL = tuple(i for i in range(0, self.NCODES))
         """An enumeration of all the codes, in numeric form."""
 
         self.ALL_SET = frozenset(self.ALL)
         """:py:data:`ALL` as a set."""
 
-        self.CODES = tuple(decode(i) for i in range(0, NCODES))
+        self.CODES = tuple(self.decode(i) for i in range(0, self.NCODES))
         """Lookup table, converts numeric codes to vectors of color
         numbers.
 
@@ -105,11 +66,11 @@ class codetable(object):
         [5, 5, 5, 5]
         """
 
-        self.FIRST = tuple([encode([0,0,0,0]),
-                            encode([1,0,0,0]),
-                            encode([1,1,0,0]),
-                            encode([2,1,0,0]),
-                            encode([3,2,1,0])])
+        self.FIRST = tuple([self.encode([0,0,0,0]),
+                            self.encode([1,0,0,0]),
+                            self.encode([1,1,0,0]),
+                            self.encode([2,1,0,0]),
+                            self.encode([3,2,1,0])])
         """First roots: generic representative of all possible
         codes, if permutations of positions and colors are considered
         equivalent.  This is a small set (5 elements), representing all
@@ -118,5 +79,58 @@ class codetable(object):
         self.FIRST_SET = frozenset(self.FIRST)
         """:py:data:`FIRST` as a set"""
 
-CODETABLE = codetable()
-"""Instance of :py:class:`.codetable`. """
+
+    def decode(self, c):
+        """Decodes an integer into a vector of color numbers.
+
+        :param c: numeric code to be decoded.
+        :return: tuple with :py:data:`codetable.NPOSITIONS` color numbers.
+        """
+        if c < 0 or c >= self.NCODES:
+            raise Exception, "Out of range: code:%d, range:[%d, %d)" % \
+                (c, 0, self.NCODES)
+        v = []
+        t = c
+        for i in range(0, self.NPOSITIONS):
+            v.append(t % self.NCOLORS)
+            t = int(t // self.NCOLORS)
+        return tuple(v)
+
+    
+    def encode(self, v):
+        """Encodes a vector of color numbers into a numeric value.
+
+        :param v: vector of color numbers.
+        :return: an integer encoding of the code.
+        """
+        if len(v) != self.NPOSITIONS:
+            raise Exception, \
+                "Incorrect length:{}, required:{}, v:{}". \
+                format(len(v), self.NPOSITIONS, v)
+        c = 0
+        t = 1
+        for i in v:
+            if i < 0 or i >= self.NCOLORS:
+                raise Exception, \
+                    "Out of range: peg:{}, range:[{}, {}); code:{}". \
+                    format(i, 0, self.NCOLORS, v)
+            c = c + i*t
+            t = t * self.NCOLORS
+        return c
+
+    def encode_score(e, a):
+        """Function that encodes a score into a numeric value.
+
+        .. warning::
+          does not validate inputs.
+
+        :param e: exact matches.
+        :param a: approximate matches.
+
+        :return: numeric encoding of the score.
+        """
+        return int((self.NPOSITIONS - e)*(self.NPOSITIONS - e + 1) // 2) + a
+
+
+CODETABLE = CodeTable()
+"""Instance of :py:class:`.CodeTable`. """
