@@ -1,6 +1,7 @@
+.. highlight:: python
 
-Welcome to pymm's documentation!
-================================
+pymm documentation
+==================
 
 Modules:
 
@@ -8,12 +9,16 @@ Modules:
    :toctree: generated
 
    mm
+   mm.score
+   mm.singleton
 
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
+
+   casequiv
 
 
 Indices and tables
@@ -22,4 +27,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

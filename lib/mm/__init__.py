@@ -85,38 +85,38 @@ def encode_score(e, a):
     return int((NPOSITIONS - e)*(NPOSITIONS - e + 1) // 2) + a
 
 
-
 class codetable(object):
     """Lookup table mapping numeric codes to vectors of color numbers.
     A singleton class."""
     __metaclass__ = Singleton
 
-    ALL = tuple(i for i in range(0, NCODES))
-    """An enumeration of all the codes, in numeric form."""
+    def __init__(self):
+        self.ALL = tuple(i for i in range(0, NCODES))
+        """An enumeration of all the codes, in numeric form."""
 
-    ALL_SET = frozenset(ALL)
-    """:py:data:`ALL` as a set."""
+        self.ALL_SET = frozenset(self.ALL)
+        """:py:data:`ALL` as a set."""
 
-    CODES = tuple(decode(i) for i in range(0, NCODES))
-    """Lookup table, converts numeric codes to vectors of color
-    numbers.
+        self.CODES = tuple(decode(i) for i in range(0, NCODES))
+        """Lookup table, converts numeric codes to vectors of color
+        numbers.
 
-    >>> c = codetable().CODE[1295]
-    [5, 5, 5, 5]
-    """
+        >>> c = codetable().CODE[1295]
+        [5, 5, 5, 5]
+        """
 
-    FIRST = tuple([encode([0,0,0,0]),
-                   encode([1,0,0,0]),
-                   encode([1,1,0,0]),
-                   encode([2,1,0,0]),
-                   encode([3,2,1,0])])
-    """First roots: generic representative of all possible
-    codes, if permutations of positions and colors are considered
-    equivalent.  This is a small set (5 elements), representing all
-    possible first moves in a MasterMind game."""
+        self.FIRST = tuple([encode([0,0,0,0]),
+                            encode([1,0,0,0]),
+                            encode([1,1,0,0]),
+                            encode([2,1,0,0]),
+                            encode([3,2,1,0])])
+        """First roots: generic representative of all possible
+        codes, if permutations of positions and colors are considered
+        equivalent.  This is a small set (5 elements), representing all
+        possible first moves in a MasterMind game."""
 
-    FIRST_SET = frozenset(FIRST)
-    """:py:data:`FIRST` as a set"""
+        self.FIRST_SET = frozenset(self.FIRST)
+        """:py:data:`FIRST` as a set"""
 
 CODETABLE = codetable()
 """Instance of :py:class:`.codetable`. """
