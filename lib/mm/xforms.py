@@ -41,7 +41,7 @@ def permutations(v):
 NamedPermutationPair = collections.namedtuple('NamedPermutationPair',
                                               ['pp', 'cp'])
 class Transform(NamedPermutationPair):
-    """Transform(pp=<pp>, cp=<cp>)
+    """Transform.new(pp=<pp>, cp=<cp>)
 
     A transformation consisting of two permuations, one for positions,
     and one for colors.
@@ -53,9 +53,20 @@ class Transform(NamedPermutationPair):
     """
 
     def __new__(cls, **kwargs):
-        return NamedPermutationPair.__new__(Transform, 
-                                            kwargs['pp'], 
+        """Creates an instance of the class.
+
+        :param kwargs: keyword args.  Must include the names ``pp`` and ``cp``.
+        :return: instance of :py:class:`.Transform`.
+        """
+        return NamedPermutationPair.__new__(cls,
+                                            kwargs['pp'],
                                             kwargs['cp'])
+
+    def __repr__(self):
+        return "{}.{}(pp={}, cp={})".format(
+            self.__class__.__module__,
+            self.__class__.__name__, 
+            self.pp, self.cp)
 
 
 class TransformTable(object):
@@ -75,6 +86,10 @@ class TransformTable(object):
     NCOLORPERMS = math.factorial(CODETABLE.NCOLORS)
     """Count of possible color permutations."""
 
+    IDENTITY = Transform(cp=0, pp=0)
+    """The identity transformation."""
+
+
     def __init__(self):
         """Initialize contents."""
 
@@ -84,13 +99,29 @@ class TransformTable(object):
         self.colorperms = tuple(c for c in permutations(self.COLORS))
         """All color permutations."""
 
-    def apply(self, v, xform):
+        self._ALL = None
+
+
+    @property
+    def ALL(self):
+        """Set of all possible transformations.
+
+        :return: :py:class:`frozenset` of :py:class:`.Transform`
+        """
+        if not self._ALL:
+            self._ALL = frozenset(Transform(pp=pp, cp=cp)
+                                  for pp in xrange(self.NPOSPERMS)
+                                  for cp in xrange(self.NCOLORPERMS))
+        return self._ALL
+
+
+    def apply(self, xform, v):
         """Returns a transformed code.
 
         :param v: mastermind code, in vector form.
         :type v: tuple or list.
         :param xform: a pair of indexes.
-        :type xform:
+        :type xform: :py:class:`.Transform`
         :return: transformed mastermind code, in vector form.
         """
         return self.apply_cp(xform.cp, self.apply_pp(xform.pp, v))
@@ -109,7 +140,7 @@ class TransformTable(object):
         return tuple(v[i] for i in p)
 
 
-    def apply_cp(cp, v):
+    def apply_cp(self, cp, v):
         """Applies the color permutation to the input.
 
         :param cp: color permutation index.
@@ -122,3 +153,36 @@ class TransformTable(object):
         return tuple(p[i] for i in v)
 
 
+    def invariant_after(self, c):
+        v = CODETABLE.CODES[c]
+        return frozenset(t for t in self.ALL if self.apply(t, v) == v)
+
+    def invariant_after(self, prefix, seed=None):
+        """Transformations that do not vary a mastermind code.
+
+        Recommend for use with the initial code in a solution, 
+        then using the result to find case-distinct followers
+        with increasing length prefixes.
+
+        :param prefix: mastermind code prefix, in encoded form.
+        :type c: iterable of int
+        :param seed: initial set of transforms to start with; defaults to
+          :py:attr:`.TransformTable.ALL` when input is ``None``.
+        :type seed: iterable of :py:class:`.Transform`.
+        :return: a set of :py:class:`.Transform` objects that do
+          not change any element of ``prefix``.
+        """
+        inv = seed
+        if inv is None:
+            inv = self.ALL
+
+        minlen = len(inv)
+        if IDENTITY not in inv:
+            minlen = max(minlen-1, 0)
+
+        for c in prefix:
+            v = CODETABLE.CODES[c]
+            inv = frozenset(t for t in inv if self.apply(t, v) == v)
+            if len(inv) <= minlen :
+                return inv
+        return inv
