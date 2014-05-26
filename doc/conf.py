@@ -2,6 +2,7 @@
 #
 import sys
 import os
+import cloud_sptheme as csp
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -13,6 +14,7 @@ sys.path.insert(0, os.path.abspath('../lib'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'cloud_sptheme.ext.table_styling',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
@@ -90,8 +92,11 @@ keep_warnings = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinxdoc'
-html_theme_options = { }
+html_theme = 'cloud'
+html_theme_options = {
+    'popuptoc': True,
+    }
+html_theme_path = [csp.get_theme_dir()]
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []

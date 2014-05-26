@@ -65,40 +65,39 @@ Case equivalent: :math:`eqv(x, y)_{\vec{g}}`
 :math:`distinct(\vec{g})`
   The smallest set of case equivalent codes following :math:`\vec{g}`
 
-  :math:`{ \forall t \in invariant(\vec{g}: min(t(x) \forall x in C - \vec{g}) }`
-  
+  :math:`\left\{\forall x \in C - \vec{g}): min(t(x) \forall t \in invariant(\vec{g})) \right\}`
+
 **Case-distinct stats:** There is only one empty prefix, five canonical prefixes
 of size 1 (0000, 1000, 1100, 2100, 3210), and 286 distinct 2-code prefixes
 generated from the first 5, each paired with its case-distinct set elements.
 Of the 286 2-element prefixes, 31 provide full resolution; meaning that all
 codes are case-distinct after them, and consequently after any prefix that
 starts with them.  For 3-code prefixes, we skipped over prefixes that have
-degenerate invariant sets, with the results shown below::
+degenerate invariant sets, with the results shown below:
 
-  prefix |  all   | wild
-  length |  count | count
-  -------+--------+-------
-       0 |      1 |    n/a
-       1 |      5 |      0
-       2 |    286 |      0
-       3 |  43660 |     31
+.. table:: Case distinct follower counts
+  :widths: 1 1
+  :column-wrapping: true true
+  :column-alignment: right right
+  :column-dividers: single single single
+
+  ============= ==============
+  prefix length instance count
+  ============= ==============
+  0                     1
+  1                     5
+  2                   286
+  3                 43660
+  ============= ==============
 
 **Invariant transform stats:** For these, we go as far as 3-element prefixes.
-For these, the trivial case is a one-element result containing the identity
+The trivial case is a one-element result containing the identity
 transfomration.  For prefixes that lead to a trivial result, all longer
 prefixes are also trivial.  At the 3-element level, more than half of the
-prefixes lead to trivial results::
+prefixes lead to trivial results.
 
-  prefix |  all   | wild
-  length |  count | count
-  -------+--------+-------
-       0 |      1 |    n/a
-       1 |      5 |      0
-       2 |    286 |      0
-       3 | 110289 |     31
-       4 |    n/a |  66629
 
-*Size problems:*  Storing data for 3-element prefixes is expensive.  The
+**Size problems:**  Storing data for 3-element prefixes is expensive.  The
 program grows over 2GB in memory.  The pickle files are: 150MB for the
 case-distinct data, and 8MB for the invariants.  Currently, the case-distinct
 tables are restricted to 2-elements to keep the sizes down.
@@ -108,36 +107,4 @@ program's resident footprint is approximately 153MB.
 
 With the invariant tables allowed to use three-element prefixes, the footprint
 is approximately 401MB.
-
-
-Policy Driven partition result collector
-========================================
-
-  Basic policies controlling collectors:
-    - root selection controls whether case-distinct logic is applied.
-    - thus, at this level, we look at:
-      - structural equivalence: :py:class:`mm.partition.result.signature` and 
-      :py:class:`mm.partition.result.long_signature`
-      - ranking and selection:
-
-          - pick best (only one).
-          - pick best (one and its equivalents).
-          - picking multiple based on ranking:
-
-            - pick best N ranks (each, with its equivalents).
-            - pick best P% ranks.
-            - pick best ranks based on a *distance* based on
-              the worst and best ranks.
-
-  Something like:
-
-.. code-block:: python
-
-    collector_class(
-        equivalence= 'long_sig'|'short_sig'|None,
-        mode= 'single'|'multi',
-        input_ranking= None|callable,
-        output_ranking= None|callable,
-        output_selection= None|callable
-    )
 
