@@ -64,6 +64,8 @@ Case equivalent: :math:`eqv(x, y)_{\vec{g}}`
 
 :math:`distinct(\vec{g})`
   The smallest set of case equivalent codes following :math:`\vec{g}`
+
+  :math:`{ \forall t \in invariant(\vec{g}: min(t(x) \forall x in C - \vec{g}) }`
   
 **Case-distinct stats:** There is only one empty prefix, five canonical prefixes
 of size 1 (0000, 1000, 1100, 2100, 3210), and 286 distinct 2-code prefixes
