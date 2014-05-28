@@ -1,11 +1,13 @@
+import mm.loader
+import mm.singleton
+from mm import *
+
+import glob
 import os
 import os.path
 import random
 import unittest as ut
 
-import mm.loader
-import mm.singleton
-from mm import *
 
 FILE_PATH = 'test/var/CODES'
 DATA_VERSION = 1
@@ -25,22 +27,42 @@ PICKLE_SPEC = mm.loader.StorageSpec(DATA_VERSION, PICKLE_PATH)
 
 class PickledSingletonTestCase(ut.TestCase):
     def runTest(self):
-        if os.path.exists(PICKLE_PATH):
-            os.remove(PICKLE_PATH)
+        for p in glob.glob(PICKLE_PATH + '.v1.pickle*'):
+            os.remove(p)
 
         loader = mm.loader.Loader(PickledSingleton, PICKLE_SPEC)
         s = loader.get()
 
+        # corrupt the file.
+        os.remove(loader.path)
+        with open(loader.path, 'w+') as fp:
+            fp.write('x')
+
         PickledSingleton.clear()
 
         ss = loader.get()
+        self.assertNotEqual(s.special_value, ss.special_value)
+
+        PickledSingleton.clear()
+
         sss = PickledSingleton()
+        self.assertNotEqual(ss.special_value, sss.special_value)
+
         ssss = PickledSingleton()
 
-        self.assertEqual(s.special_value, ss.special_value)
-        self.assertEqual(ss.special_value, sss.special_value)
+
+
         self.assertEqual(sss.special_value, ssss.special_value)
         self.assertIs(sss, ssss)
+
+        loader.store(s)
+        loader.store(ss)
+        loader.store(sss)
+
+        self.assertTrue(os.path.exists(loader.path))
+        self.assertTrue(os.path.exists(loader.path + '.1'))
+        self.assertTrue(os.path.exists(loader.path + '.2'))
+        self.assertTrue(os.path.exists(loader.path + '.3'))
 
 
 class LoaderTest(ut.TestCase):
