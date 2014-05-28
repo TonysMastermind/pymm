@@ -9,6 +9,8 @@ Modules:
    :toctree: generated
 
    mm
+   mm.distinct
+   mm.loader
    mm.score
    mm.singleton
    mm.xforms
