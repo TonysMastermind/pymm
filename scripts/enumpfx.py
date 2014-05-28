@@ -14,7 +14,7 @@ def main():
     g = distinct.PrefixGen()
     g.skip_non_reducing = True
 
-    for (p, i, d) in g.prefixes(7, maxlen):
+    for (p, i, d) in g.prefixes(8, maxlen):
         print "{}, {}, {}, {}".format(len(p), len(i), len(d), p) 
 
 if __name__ == '__main__':
