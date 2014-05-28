@@ -171,14 +171,6 @@ class ScoreTable(singleton.SingletonBehavior):
         return self.SCORE_TABLE[max(c1, c2)][min(c1, c2)]
 
 
-    def _lookup_table(self):
-        return self.SCORE_TABLE
-
-
-    def _scores(self):
-        return self.SCORES
-
-
 SCORE_TABLE = None #scoretable()
 """The single instance of :py:class:`.ScoreTable`."""
 
