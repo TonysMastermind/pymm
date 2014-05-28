@@ -153,10 +153,6 @@ class TransformTable(singleton.SingletonBehavior):
         return tuple(p[i] for i in v)
 
 
-    def invariant_after(self, c):
-        v = CODETABLE.CODES[c]
-        return frozenset(t for t in self.ALL if self.apply(t, v) == v)
-
     def invariant_after(self, prefix, seed=None):
         """Transformations that do not vary a mastermind code.
 
@@ -177,12 +173,13 @@ class TransformTable(singleton.SingletonBehavior):
             inv = self.ALL
 
         minlen = len(inv)
-        if IDENTITY not in inv:
+        if self.IDENTITY not in inv:
             minlen = max(minlen-1, 0)
 
         for c in prefix:
             v = CODETABLE.CODES[c]
             inv = frozenset(t for t in inv if self.apply(t, v) == v)
-            if len(inv) <= minlen :
+            if len(inv) <= minlen:
                 return inv
+
         return inv

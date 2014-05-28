@@ -35,9 +35,16 @@ class Singleton(type):
 
 
 class SingletonBehavior(object):
+
     @classmethod
     def exists(cls):
         return Singleton._instances.get(cls) is not None
+
+    @classmethod
+    def clear(cls):
+        """For testing."""
+        if cls.exists():
+            del Singleton._instances[cls]
 
     def __setstate__(self, state):
         self.__dict__.update(state)
