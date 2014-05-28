@@ -10,13 +10,15 @@ _StorageSpecBase = collections.namedtuple('_LoaderSpecBase', ['version', 'path']
 class StorageSpec(_StorageSpecBase):
     """A specifiction of storage location, consisting of a path prefix, and 
     a version."""
+
     def __new__(cls, version, path_prefix):
         """Constructs an instsance.
-        @param cls: Class being instantiated.
-        @param version: version of the schema associated with the data.
-        @param path_prefix: path_prefix of the storage path.
-        @return: an instance of L{StorageSpec}, with the path set to
-        I{path_prefix}C{.v}I{version}C{.pickle}
+
+        :param cls: Class being instantiated.
+        :param version: version of the schema associated with the data.
+        :param path_prefix: path_prefix of the storage path.
+        :return: an instance of L{StorageSpec}, with the path set to 
+          *path_prefix*``.v``*version*``.pickle``
         """
         path = '{}.v{}.pickle'.format(path_prefix, version)
         """Path to the file used for storing/loading data."""
@@ -24,7 +26,7 @@ class StorageSpec(_StorageSpecBase):
         return _StorageSpecBase.__new__(cls, version, path)
 
     def __repr__(self):
-        """@return: printable reprsentation of the object."""
+        """:return: printable reprsentation of the object."""
         return super(StorageSpec, self).__repr__().replace(
             _StorageSpecBase.__name__,
             StorageSpec.__name__,
@@ -35,13 +37,19 @@ class Loader(object):
     a storage path.  Unpickling the file is expected to yield the result
     faster than calling the data constructor.  In case the file loading
     fails, the data is constructed by computation."""
+
     def __init__(self, make, pathspec):
-        """@param make: creates the data computationally.
-        @param pathspec: path specification to pre-stored result.
+        """:param make: creates the data computationally with the expression ``make()``.
+        :param pathspec: path specification to pre-stored result.
         """
         self._make = tuple([make])
+
         self.version = pathspec.version
+        """Representation version."""
+
         self.path = pathspec.path
+        """Storage path."""
+
 
     def load(self):
         """Attempts to unpickle the data at the specified path.
@@ -54,7 +62,8 @@ class Loader(object):
 
         Exceptions and version mistmatches will result in the file being
         deleted, and a null return value.
-        @return: unpickled stored data upon success, C{None} otherwise.
+
+        :return: unpickled stored data upon success, *None* otherwise.
         """
         if os.path.exists(self.path):
             try:
@@ -71,20 +80,23 @@ class Loader(object):
             os.unlink(self.path)
         return None
 
+
     def make(self):
         """Calculate an instance of the associated data.
-        @return: The data associated with the loader."""
+
+        :return: The data associated with the loader."""
         return self._make[0]()
 
     def store(self, value):
         """Store data at the associated path.
-        @param value: the data to be stored.
-        @return: I{value}
+
+        :param value: the data to be stored.
+        :return: *value*
 
         If the loader file exists, it will be renamed with a
-        numeric suffix, I{path}.I{number}, where I{number} is
-        chosen to ensure that the file is now.  Then, the new
-        data is written to I{path}.
+        numeric suffix, *path*.*number*, where *number* is
+        chosen to ensure that the file is new.  Then, the new
+        data is written to *path*.
 
         The directory hierarchy needed to store the file will
         be created, if necessary.
@@ -110,7 +122,8 @@ class Loader(object):
 
     def get(self):
         """Returns the data associated with the loader.
-        @return: the data associated with the loader.
+
+        :return: the data associated with the loader.
 
         If the loader's file does not existed, the data will be
         calculated and stored before returning.
