@@ -9,7 +9,7 @@ class Singleton(type):
     .. code-block:: python
 
       class X(object):
-          __metaclass__ = singleton
+          __metaclass__ = Singleton
       
       x = X() # X() => singleton.__call__(X, (), {})
       y = X()
@@ -32,3 +32,18 @@ class Singleton(type):
             cls._instances[cls] = \
                 super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+class SingletonBehavior(object):
+    @classmethod
+    def exists(cls):
+        return Singleton._instances.get(cls) is not None
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        cls = self.__class__
+        r = Singleton._instances.get(cls)
+        if r:
+            r.__dict__.update(state)
+        Singleton._instances[cls] = self

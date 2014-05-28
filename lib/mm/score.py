@@ -6,15 +6,42 @@ scores quickly.
 
 from . import *
 from . import singleton as singleton
+from . import loader as loader
 
+import collections
 
 _CODES= CODETABLE.CODES
 """A table mapping numeric codes to the tuple representation."""
 
-class Score(object):
-    """Class representing Mastermind scores."""
+NCODES     = CodeTable.NCODES
+NPOSITIONS = CodeTable.NPOSITIONS
+NCOLORS    = CodeTable.NCOLORS
+NSCORES    = CodeTable.NSCORES
 
-    def __init__(self, exact=None, approx=None):
+VERSION = 1
+STORAGE_PATH = 'var/scoretable'
+
+NamedScoreTuple = collections.namedtuple('NamedScoreTuple',
+                                        ['exact', 'approx', 'value'])
+
+class Score(NamedScoreTuple):
+    """Class representing Mastermind scores.
+
+    **Fields**
+
+    exact
+      Exact component of score: count of pegs that match in 
+      position and color.
+
+    approx
+      Approximate component of score: count of pegs that match in color,
+        but disagree in position.  This count excludes the exact matches.
+
+    value
+      Numeric encoding of score.  0 is the perfect score.
+    """
+
+    def __new__(cls, exact=None, approx=None):
         """score calculations.
 
         :param exact: exact matches.
@@ -23,22 +50,20 @@ class Score(object):
         e = exact
         a = approx
         if e < 0 or e > NPOSITIONS or a < 0 or a > NPOSITIONS or \
-                (e+a) > NPOSITIONS or (e == NPOSITIONS-1 and a != 0):
+                (e+a) > NPOSITIONS:
             raise Exception, \
                 ("Invalid score:(exact={0},approx={1}); " +
                  "range for each: [0,{2}), " +
                  "range for sum:[0,{2}), for exact={3}, approx must be 0.").\
                  format(e, a, NPOSITIONS, NPOSITIONS-1)
-        self.exact  = e
-        """Exact component of score: count of pegs that match in 
-        position and color."""
 
-        self.approx = a
-        """Approximate component of score: count of pegs that match in color,
-        but disagree in position.  This count excludes the exact matches."""
+        return NamedScoreTuple.__new__(cls, e, a, CODETABLE.encode_score(e, a))
 
-        self.value  = encode_score(e,a)
-        """Numeric encoding of score.  0 is the perfect score."""
+    def __repr__(self):
+        return "{}.{}(exact={}, approx={}, value={})".format(
+            self.__class__.__module__,
+            self.__class__.__name__, 
+            *self)
 
 
     @staticmethod
@@ -49,7 +74,7 @@ class Score(object):
         :param c2: second code.
         :return: :py:class:`.score`.
         """
-        return score.from_vectors(_CODES[c1], _CODES[c2])
+        return Score.from_vectors(_CODES[c1], _CODES[c2])
 
     @staticmethod
     def from_vectors(v1, v2):
@@ -92,20 +117,21 @@ def _genscores():
     s = [0] * NSCORES
     for e in range(0, NPOSITIONS+1):
         for a in range(0, NPOSITIONS+1-e):
-            i = encode_score(e, a)
-            s[i] = (e, a)
+            i = CODETABLE.encode_score(e, a)
+            s[i] = Score(e, a)
     return tuple(s)
 
 
 def _genscoretable():
-    return tuple(tuple(score.from_vectors(_CODES[c1], _CODES[c2]).value \
+    return tuple(tuple(Score.from_vectors(_CODES[c1], _CODES[c2]).value \
                            for c1 in range(0, NCODES)) \
                      for c2 in range(0, NCODES))
 
 
-class ScoreTable(object):
+class ScoreTable(singleton.SingletonBehavior):
     """Precalculated scores."""
     __metaclass__ = singleton.Singleton
+
 
     def __init__(self):
         self.SCORES = _genscores()
@@ -129,12 +155,12 @@ class ScoreTable(object):
         """Decodes a numeric score into a pair of numnbers (exact, approx).
 
         :param s: score to be translated to a pair of numbers.
-        :return: numeric score.
+        :return: score as a pair.
         """
         return self.SCORES[s]
 
 
-    def score(self, c1,c2):
+    def score(self, c1, c2):
         """Looks up the match score between two numeric codes, returning
         a numerically encoded score value.
 
@@ -160,6 +186,10 @@ def initialize():
     """Initialize global tables."""
 
     global SCORE_TABLE
-    SCORE_TABLE = ScoreTable()
 
+    spec = loader.StorageSpec(VERSION, STORAGE_PATH)
+    ldr = loader.Loader(ScoreTable, spec)
 
+    tbl = ldr.get()
+
+    SCORE_TABLE = tbl

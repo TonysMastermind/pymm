@@ -69,7 +69,7 @@ class Transform(NamedPermutationPair):
             self.pp, self.cp)
 
 
-class TransformTable(object):
+class TransformTable(singleton.SingletonBehavior):
     """Transformation table with all transformatons, a singleton."""
 
     __metaclass__ = singleton.Singleton

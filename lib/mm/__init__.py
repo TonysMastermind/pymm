@@ -118,7 +118,7 @@ class CodeTable(object):
             t = t * self.NCOLORS
         return c
 
-    def encode_score(e, a):
+    def encode_score(self, e, a):
         """Function that encodes a score into a numeric value.
 
         .. warning::
