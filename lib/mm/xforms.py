@@ -90,6 +90,9 @@ class TransformTable(singleton.SingletonBehavior):
     """The identity transformation."""
 
 
+    CODESET = frozenset(CODETABLE.CODES)
+    """All codes, in vector form, as a set."""
+
     def __init__(self):
         """Initialize contents."""
 
@@ -183,3 +186,4 @@ class TransformTable(singleton.SingletonBehavior):
                 return inv
 
         return inv
+
