@@ -1,0 +1,3 @@
+[submodule "pymm-data"]
+	path = pymm-data
+	url = ssh://git/git/pymm-data
