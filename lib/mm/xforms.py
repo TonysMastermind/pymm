@@ -172,9 +172,9 @@ class TransformTable(singleton.SingletonBehavior):
         if inv is None:
             inv = self.ALL
 
-        minlen = len(inv)
-        if self.IDENTITY not in inv:
-            minlen = max(minlen-1, 0)
+        minlen = 0
+        if self.IDENTITY in inv:
+            minlen = 1
 
         for c in prefix:
             v = CODETABLE.CODES[c]
