@@ -12,6 +12,7 @@ def main():
         maxlen = int(sys.argv[1])
 
     g = distinct.PrefixGen()
+    g.skip_non_reducing = True
 
     for (p, i, d) in g.prefixes(7, maxlen):
         print "{}, {}, {}, {}".format(len(p), len(i), len(d), p) 
