@@ -52,18 +52,29 @@ class PrefixGen(object):
     def _vset(self, pfx):
         return frozenset(CODETABLE.CODES[c] for c in pfx)
 
-    def _prefixes(self, p, invp, maxlen):
-        d = self._distinct(invp, self._vset(p))
+    def _prefixes(self, p, invp, maxlen, d=None):
+        if d is None:
+            d = self._distinct(invp, self._vset(p))
+
         yield (p, invp, d)
 
         if (not invp) or (len(p) >= maxlen) or (len(d) == (CODETABLE.NCODES-len(p))):
             return
 
+        dprev = d
+        lendprev = len(dprev)
         for c in d:
             nxt = p + (c,)
             invnxt = self.xftbl.invariant_after(nxt, invp)
-            if self.skip_non_reducing and (len(invnxt) == len(invp)):
-                continue
-            for (q, i, d) in self._prefixes(nxt, invnxt, maxlen):
+            dnxt = self._distinct(invnxt, self._vset(nxt))
+
+            if self.skip_non_reducing:
+                if (len(invnxt) == len(invp)):
+                    continue
+
+                if len(dnxt) <= lendprev:
+                    continue
+
+            for (q, i, d) in self._prefixes(nxt, invnxt, maxlen, dnxt):
                 yield (q, i, d)
 

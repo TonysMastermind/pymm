@@ -16,13 +16,25 @@ def parser():
                    help='Maximum prefix length.',
                    action='store', default=3)
 
+    p.add_argument('--skip-non-reducing', '-o', 
+                   help='Optimize',
+                   action='store_true',
+                   dest='skip_non_reducing')
+
+    p.add_argument('--allow-non-reducing', '-a', 
+                   help='Do not optimize.',
+                   action='store_false',
+                   dest='skip_non_reducing')
+
     return p
 
 def main():
     class options(object):
-        pass
+        def __init__(self):
+            self.skip_non_reducing = True
 
     opt = options()
+
     p = parser()
     args = p.parse_args(namespace=opt)
 
@@ -30,7 +42,7 @@ def main():
     first = args.initial
 
     g = distinct.PrefixGen()
-    g.skip_non_reducing = True
+    g.skip_non_reducing = args.skip_non_reducing
 
     for (p, i, d) in g.prefixes(first, maxlen):
         print "{}, {}, {}, {}".format(len(p), len(i), len(d), p) 

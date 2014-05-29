@@ -1,0 +1,48 @@
+#!/bin/bash
+
+fname=$1
+
+function render {
+    len=$1
+    file=$2
+    name=$3
+
+    echo "length=$len"
+    echo "frequency $name"
+    echo "~~~~~~~~~ "$(echo "$name"|sed 's/./~/g')
+    cat $file | awk "{printf(\"%'9d %'9d\n\", \$1, \$2)}"
+    echo "====================================="
+}
+
+function cleanup {
+    if [ ! -z "$ti" ]; then
+	rm -f $ti $td
+    fi
+}
+
+if [ -z "$fname" ]; then
+    echo "usage: $0 filename"
+    exit 1
+fi
+
+trap cleanup EXIT
+
+ti=/tmp/pfxdist.inv.$$
+td=/tmp/pfxdist.dist.$$
+
+for pfxlen in 2 3 4 5 6 7; do
+    grep '^'$pfxlen < $fname | \
+        awk -F', ' '{print $2 }'| \
+	sort -n| \
+	uniq -c > $ti
+    grep '^'$pfxlen < $fname | \
+        awk -F', ' '{print $3 }'| \
+	sort -n| \
+	uniq -c > $td
+
+    n=$(wc -l $ti|cut -d ' ' -f 1)
+    if [ $n -gt 0 ]; then
+	render $pfxlen $ti "Invariant Transformation Count"
+	render $pfxlen $td "Distinct Follower Count"
+    fi
+done
