@@ -1,0 +1,8 @@
+#!/bin/bash
+
+me=${BASH_SOURCE[0]}
+here=$(realpath $(dirname $me))
+lib=$(realpath $here/../lib)
+export PYTHONPATH=${lib}:$PYTHONPATH
+
+exec python2.7 ${me}.py "$@"
