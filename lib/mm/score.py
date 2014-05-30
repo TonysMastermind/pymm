@@ -164,9 +164,11 @@ class ScoreTable(singleton.SingletonBehavior):
         """Looks up the match score between two numeric codes, returning
         a numerically encoded score value.
 
-        :param c1:
-        :param c2:
-        :return: numeric score.
+        :param c1: a code in numeric form.
+        :type c1: int
+        :param c2: a code in numeric form.
+        :type c2: int
+        :return: mastermind score of *c1* against *c2*, in numeric form.
         """
         return self.SCORE_TABLE[max(c1, c2)][min(c1, c2)]
 
@@ -174,10 +176,32 @@ class ScoreTable(singleton.SingletonBehavior):
 SCORE_TABLE = None #scoretable()
 """The single instance of :py:class:`.ScoreTable`."""
 
+def _initialize_then_score(c1, c2):
+    """Calculates the mastermind score of the input codes.
+
+    :param c1: a code in numeric form.
+    :type c1: int
+    :param c2: a code in numeric form.
+    :type c2: int
+    :return: mastermind score of *c1* against *c2*, in numeric form.
+    """
+
+    global score
+
+    initialize()
+    return score(c1, c2)
+
+
+score = _initialize_then_score
+
 def initialize():
     """Initialize global tables."""
 
     global SCORE_TABLE
+    global score
+
+    if SCORE_TABLE is not None:
+        return
 
     spec = loader.StorageSpec(VERSION, STORAGE_PATH)
     ldr = loader.Loader(ScoreTable, spec)
@@ -185,3 +209,4 @@ def initialize():
     tbl = ldr.get()
 
     SCORE_TABLE = tbl
+    score = SCORE_TABLE.score

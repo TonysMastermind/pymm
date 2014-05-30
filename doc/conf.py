@@ -6,7 +6,10 @@ import cloud_sptheme as csp
 import glob
 import logging
 import os
+import os.path
+import shutil
 import sys
+import traceback
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -14,9 +17,19 @@ import sys
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../lib'))
 
-print ">>> Clearing generated files."
-for g in glob.iglob('generated/*'):
-    os.remove(g)
+# Sphinx attempts to reuse previously generated or saved state, causing
+# some updates not to appear.
+print ">>> Clearing previous runs."
+for p in os.listdir('generated'):
+    if os.path.isfile(p):
+        try:
+            os.remove(p)
+        except:
+            traceback.print_exc()
+            pass
+
+shutil.rmtree('../build/sphinx', ignore_errors=True)
+
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
