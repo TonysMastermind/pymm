@@ -15,8 +15,8 @@ def printablecode(c):
     return str(CODETABLE.CODES[c])
 
 def hdrs():
-    print "prefix           ndistinct total count  max  min   mean   sorted sizes"
-    print "================ ========= ===== ===== ==== ==== ======== ======================"
+    print "prefix           ndistinct total count  max  min   mean    entropy   sorted sizes"
+    print "================ ========= ===== ===== ==== ==== ======== ========== ======================"
 
 def main():
     p = argparse.ArgumentParser()
@@ -48,7 +48,7 @@ def main():
     
 
     hdrs()
-    print "(%s) %9d %5d %4d%s %3d%s %4d %8.2f %s" % \
+    print "(%s) %9d %5d %4d%s %3d%s %4d %8.2f %9.4f%s %s" % \
         (printablecode(first) + '  ' + (' ' * len(printablecode(first))),
          pfx0[1],
          s0.total,
@@ -56,6 +56,7 @@ def main():
          s0.largest, ' ',
          s0.smallest,
          s0.mean,
+         s0.entropy, ' ',
          str(pr0.sorted_sizes))
 
     print "----"
@@ -69,6 +70,16 @@ def main():
                 r.stats.max_partitions = False
             else:
                 r.stats.max_partitions = True
+
+
+        subset = sorted(subset, lambda a, b: cmp(b.stats.entropy, a.stats.entropy))
+        entropy_max = subset[0].stats.entropy
+        for r in subset:
+            if (r.stats.entropy + FLOAT_FUZZ) < entropy_max:
+                r.stats.max_entropy = False
+            else:
+                r.stats.max_entropy = True
+
 
         subset = sorted(subset, lambda a, b: cmp(a.stats.largest, b.stats.largest))
         largest_min = subset[0].stats.largest
@@ -84,22 +95,26 @@ def main():
                                           results[(a, prob)].stats.max_partitions) or \
                                       cmp(results[(b, prob)].stats.min_largest,
                                           results[(a, prob)].stats.min_largest) or \
+                                      cmp(results[(b, prob)].stats.max_entropy,
+                                          results[(a, prob)].stats.max_entropy) or \
                                       cmp(b[1], a[1]) or \
                                       cmp(results[(b, prob)].stats.n, results[(a, prob)].stats.n) or \
-                                      cmp(results[(a, prob)].stats.largest, results[(b, prob)].stats.largest))
+                                      cmp(results[(a, prob)].stats.largest, results[(b, prob)].stats.largest) or \
+                                      cmp(results[(b, prob)].stats.entropy, results[(a, prob)].stats.entropy) )
 
         for pfx in ordered_prefixes:
             (p, ndistinct) = pfx
             pr = results[(pfx, prob)]
             s = pr.stats
-            print "(%s) %9d %5d %4d%s %3d%s %4d %8.2f %s" % \
+            print "(%s) %9d %5d %4d%s %3d%s %4d %8.2f %9.4f%s %s" % \
                 (', '.join(map(printablecode, p)),
                  ndistinct,
                  s.total,
-                 s.n, MARKERS[pr.stats.max_partitions],
-                 s.largest, MARKERS[pr.stats.min_largest],
+                 s.n, MARKERS[s.max_partitions],
+                 s.largest, MARKERS[s.min_largest],
                  s.smallest,
                  s.mean,
+                 s.entropy, MARKERS[s.max_entropy],
                  str(pr.sorted_sizes))
         print "----"
 
