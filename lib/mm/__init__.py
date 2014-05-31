@@ -28,6 +28,13 @@ class Exception(exceptions.Exception):
     pass
 
 
+class Code(tuple):
+    """A refinement of :py:class:`tuple` for printability."""
+
+    def __repr__(self):
+        return '[{}]'.format(''.join(map(str, self)))
+
+
 class CodeTable(object):
     """Lookup table mapping numeric codes to vectors of color numbers.
     A singleton class."""
@@ -66,11 +73,13 @@ class CodeTable(object):
         [5, 5, 5, 5]
         """
 
-        self.FIRST = tuple([self.encode([0,0,0,0]),
-                            self.encode([1,0,0,0]),
-                            self.encode([1,1,0,0]),
-                            self.encode([2,1,0,0]),
-                            self.encode([3,2,1,0])])
+        self.FIRST = tuple(map(self.encode,
+                               ([0,0,0,0],
+                                [1,0,0,0],
+                                [1,1,0,0],
+                                [2,1,0,0],
+                                [3,2,1,0])))
+
         """First roots: generic representative of all possible
         codes, if permutations of positions and colors are considered
         equivalent.  This is a small set (5 elements), representing all
@@ -94,7 +103,7 @@ class CodeTable(object):
         for i in range(0, self.NPOSITIONS):
             v.append(t % self.NCOLORS)
             t = int(t // self.NCOLORS)
-        return tuple(v)
+        return Code(v)
 
     
     def encode(self, v):

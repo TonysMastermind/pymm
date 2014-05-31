@@ -22,6 +22,7 @@ def safelog(n):
         return math.log(n, 2)
     return 0
 
+
 class Stats(object):
     """Basic partitition stats."""
 
