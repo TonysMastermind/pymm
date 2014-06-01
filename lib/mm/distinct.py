@@ -70,7 +70,7 @@ class PrefixGen(object):
 
         yield (p, invp, d)
 
-        if (not invp) or (len(p) >= maxlen) or (len(d) == (CODETABLE.NCODES-len(p))):
+        if (len(invp) == 1) or (len(p) >= maxlen) or (len(d) == (CODETABLE.NCODES-len(p))):
             return
 
         dprev = d
