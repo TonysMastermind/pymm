@@ -81,10 +81,8 @@ class PrefixGen(object):
             dnxt = self._distinct(invnxt, self._vset(nxt))
 
             if self.skip_non_reducing:
-                if (len(invnxt) == len(invp)):
-                    continue
-
-                if len(dnxt) <= lendprev:
+                if (len(invnxt) == len(invp)) or (len(dnxt) <= lendprev):
+                    yield (nxt, invnxt, dnxt)
                     continue
 
             for (q, i, d) in self._prefixes(nxt, invnxt, maxlen, dnxt):

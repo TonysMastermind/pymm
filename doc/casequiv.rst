@@ -63,20 +63,29 @@ Using case-equivalence analysis, we have:
   [1100]            38
   [2100]            129
   [3210]            56
-  [:math:`c_1,c_2`] 43,600
   ================= ==================
 
 
-**Case-distinct stats:** There is only one empty prefix, five canonical prefixes
-of size 1 (0000, 1000, 1100, 2100, 3210), and 286 distinct 2-code prefixes
-generated from the first 5, each paired with its case-distinct set elements.
-Of the 286 2-element prefixes, 31 provide full resolution; meaning that all
-codes are case-distinct after them, and consequently after any prefix that
-starts with them.
+Interesting numbers
+~~~~~~~~~~~~~~~~~~~ 
+
+The code *[2100]* remains invariant under 24 transformations (out of 17,280).  Under these 24
+transformations, the canonical set of distinct followers has 129 members, of which
+
+- 19 achieve full resolution: only the identity transformation preserves both codes in the 
+  prefix.
+- 2 achieve no extra resolution: the same transformations that preserve the initial code
+  also preserve them.
+     
+The code *[1100]* remains invariant under 192 transformations (out of 17,280).  Under these
+192 transformations, the canonical set of distinct followers has 38 members, of which
+
+- none acheive full resolution.
+- 1 achieves no extra resolution.
+
 
 Usefulness
 ==========
 
 Case equivalence simplifies exhaustive approaches by reducing the number of 
-codes to be examined.
-
+codes to be examined for the first two to three guesses.
