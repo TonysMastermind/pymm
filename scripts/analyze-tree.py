@@ -71,17 +71,14 @@ def action(path, tree):
             inv = XFTBL.ALL
 
     pp = path[:-1]
-    newpfx = False
     if not pp in SEEN:
         ALL_PREFIXES.add(pfx)
         PREFIX_USE_COUNT[pfx] += 1
         SEEN.add(pp)
-        newpfx = True
         MAX_PFX_LEN = max(len(pfx), MAX_PFX_LEN)
 
-    if newpfx:
-        insoln = tree['in_solution']
-        RECORDS.append((pfx, insoln, (mx == 1), len(children), psize, mx, len(inv)))
+    insoln = tree['in_solution']
+    RECORDS.append((pfx, insoln, (mx == 1), len(children), psize, mx, len(inv)))
 
     return True
 
@@ -144,7 +141,7 @@ def main():
     print '  ' + header
     print '  ' + separator
 
-    for r in sorted(RECORDS, lambda a, b: cmp(a[0], b[0])):
+    for r in sorted(RECORDS, lambda a, b: cmp(a[0], b[0]) or cmp(b[4], a[4])):
         (pfx, insoln, optimal, nchildren, psize, maxprob, ninv) = r
         fields = (format_prefix(pfx),
                   ''.join((('\\$' if psize <= CODETABLE.NSCORES else ''), 
