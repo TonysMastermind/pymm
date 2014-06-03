@@ -23,10 +23,10 @@ class PrefixGen(object):
         Given:
 
           - input prefix *p*,
-          - the set *I* representing the invariant transforms for *p*, 
+          - the set *P* representing the preserving transforms for *p*, 
           - the set *D* of distinct followers of *p*
-          - for each *d* in *D*: if the invariant transforms of *p+(d)* are the same as *I*, then
-            *d* is consideredn *inefficient*.
+          - for each *d* in *D*: if the preserving transforms of *p+(d)* are the same as *P*, then
+            *d* is considered *inefficient*.
         """
 
     def _distinct(self, xfset, exclusions):
@@ -46,7 +46,7 @@ class PrefixGen(object):
         """
         first = (first,)
 
-        for p in self._prefixes(first, self.xftbl.invariant_after(first, self.seed), maxlen):
+        for p in self._prefixes(first, self.xftbl.preserving(first, self.seed), maxlen):
             yield p
 
     def distinct_after(self, pfx):
@@ -57,7 +57,7 @@ class PrefixGen(object):
         """
         xfset = self.seed
         if pfx:
-            xfset = self.xftbl.invariant_after(pfx, xfset)
+            xfset = self.xftbl.preserving(pfx, xfset)
 
         return self._distinct(xfset, frozenset(pfx))
 
@@ -77,7 +77,7 @@ class PrefixGen(object):
         lendprev = len(dprev)
         for c in dprev:
             nxt = p + (c,)
-            invnxt = self.xftbl.invariant_after(nxt, invp)
+            invnxt = self.xftbl.preserving(nxt, invp)
             dnxt = self._distinct(invnxt, self._vset(nxt))
 
             if self.skip_non_reducing:

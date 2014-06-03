@@ -156,7 +156,7 @@ class TransformTable(singleton.SingletonBehavior):
         return tuple(p[i] for i in v)
 
 
-    def invariant_after(self, prefix, seed=None):
+    def preserving(self, prefix, seed=None):
         """Transformations that do not vary a mastermind code.
 
         Recommend for use with the initial code in a solution, 

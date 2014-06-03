@@ -14,21 +14,21 @@ Terms
 :math:`C`
   All the possible mastermind codes.
 
-:math:`invariant(x)`
+:math:`preserving(x)`
   The subset of :math:`T` that does not vary the code :math:`x`; or
 
   :math:`\left\{ t \in T: t(x) = x \right\}`
 
-:math:`invariant(\vec{x})`
+:math:`preserving(\vec{x})`
   The subset of transformations that do not vary any of the codes 
   :math:`x_1`, :math:`x_2`, ...;  
 
-  :math:`invariant(x_1) \cap invariant(x_2) \cap ...`.
+  :math:`preserving(x_1) \cap preserving(x_2) \cap ...`.
 
 Case equivalent: :math:`eqv(x, y)_{\vec{g}}`
   We say that :math:`x` and :math:`y` are *case equivalent after a sequence
   of guesses (codes)* :math:`\vec{g}` when there is a transformation in 
-  :math:`invariant(\vec{g})` mapping :math:`x` to :math:`y`; or
+  :math:`preserving(\vec{g})` mapping :math:`x` to :math:`y`; or
 
   :math:`eqv(x,y)_{\vec{g}} \iff \exists t \in invariant(\vec{g}): t(x) = y`, or
 

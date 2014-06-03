@@ -15,7 +15,7 @@ class IdentityTestTestCase(ut.TestCase):
     def testDistinctAfter(self):
         pgen = distinct.PrefixGen()
         observed = pgen.distinct_after((8,))
-        inv = pgen.xftbl.invariant_after((8,))
+        inv = pgen.xftbl.preserving((8,))
         expected = set()
         for v in pgen.xftbl.CODESET - frozenset((CODETABLE.CODES[8],)):
             c = min(map(lambda v: CODETABLE.encode(v), 
@@ -34,7 +34,7 @@ class IdentityTestTestCase(ut.TestCase):
     def testPrefixesWithNonReducing(self):
         pgen = distinct.PrefixGen()
         observed = pgen.distinct_after((8,))
-        inv = pgen.xftbl.invariant_after((8,))
+        inv = pgen.xftbl.preserving((8,))
         expected = set()
         for v in pgen.xftbl.CODESET - frozenset((CODETABLE.CODES[8],)):
             c = min(map(lambda v: CODETABLE.encode(v), 

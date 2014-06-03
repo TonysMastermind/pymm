@@ -1,5 +1,6 @@
 from mm import CODETABLE
 from mm.treewalk import walkfile, path2prefix
+from mm.xforms import TransformTable
 
 import argparse
 from collections import defaultdict
@@ -8,12 +9,17 @@ import sys
 def prefix(path):
     return tuple(map(lambda c: CODETABLE.CODES[c], path2prefix(path)))
 
+
 ALL_PREFIXES = set()
 PREFIX_USE_COUNT = defaultdict(int)
 
 SEEN = set()
 
 LENGTH_SIZE_MAP = defaultdict(lambda: defaultdict(int))
+
+XFTBL = TransformTable()
+
+INVARIANTS = {}
 
 def action(path, tree):
     global ALL_PREFIXES
@@ -30,6 +36,16 @@ def action(path, tree):
         subsizes = map(lambda t: t['problem_size'], children.itervalues())
     mx = max(subsizes)
     pfx = prefix(path)
+    cpfx = path2prefix(path)
+
+    inv = INVARIANTS.get(cpfx)
+    if not inv:
+        if cpfx:
+            i0 = INVARIANTS.get(cpfx[:-1])
+            inv = XFTBL.invariant_after((cpfx[-1],), i0)
+            INVARIANTS[cpfx] = inv
+        else:
+            INVARIANTS[cpfx] = XFTBL.ALL
 
     pp = path[:-1]
     if not pp in SEEN:
@@ -39,12 +55,12 @@ def action(path, tree):
 
     if mx:
         if mx <= 3:
-            print " {} {} => {}".format(pfx,
-                                        psize, list(reversed(sorted(subsizes))))
+            print " {} len(inv)={}, problem.size={} => {}".format(
+                pfx, len(inv), psize, list(reversed(sorted(subsizes))))
             return mx > 1
         elif psize <= 14:
-            print "*{} {} => {}".format(pfx,
-                                        psize, list(reversed(sorted(subsizes))))
+            print "*{} len(inv)={}, problem.size={} => {}".format(
+                pfx, len(inv), psize, list(reversed(sorted(subsizes))))
             return True
 
     return True

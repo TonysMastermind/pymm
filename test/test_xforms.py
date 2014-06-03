@@ -28,18 +28,18 @@ class ReversePPTestCase(ut.TestCase):
 class InvariantAfterTestCase(ut.TestCase):
     def runTest(self):
         xftbl = xforms.TransformTable()
-        inv = xftbl.invariant_after([])
+        inv = xftbl.preserving([])
         self.assertIs(xftbl.ALL, inv)
 
         seed = xftbl.ALL - frozenset((xftbl.IDENTITY,))
-        inv = xftbl.invariant_after([], seed)
+        inv = xftbl.preserving([], seed)
         self.assertIs(seed, inv)
 
         i1 = inv
 
         c = 48
         v = CODETABLE.CODES[c]
-        inv = xftbl.invariant_after([c], seed)
+        inv = xftbl.preserving([c], seed)
         diff = seed - inv
         for t in inv:
             self.assertEqual(v, xftbl.apply(t, v))
