@@ -42,7 +42,7 @@ def action(path, tree):
     if not inv:
         if cpfx:
             i0 = INVARIANTS.get(cpfx[:-1])
-            inv = XFTBL.invariant_after((cpfx[-1],), i0)
+            inv = XFTBL.preserving((cpfx[-1],), i0)
             INVARIANTS[cpfx] = inv
         else:
             INVARIANTS[cpfx] = XFTBL.ALL

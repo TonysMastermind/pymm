@@ -39,7 +39,7 @@ INV_COL = 0
 DIST_COL = 1
 
 def main():
-    colnames = ['n(invariant)', 'n(distinct)']
+    colnames = ['n(preserving)', 'n(distinct)']
 
     summaries = [None] + \
         [ [Summary("{}.{}".format(i, nm)) for nm in colnames]
