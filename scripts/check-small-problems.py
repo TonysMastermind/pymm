@@ -21,6 +21,9 @@ def action(path, tree):
     global SEEN
 
     psize = tree['problem_size']
+    if psize <= 2:
+        return False
+
     children = tree.get('children')
     subsizes = [0]
     if children:
