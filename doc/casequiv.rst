@@ -84,6 +84,22 @@ The code *[1100]* remains invariant under 192 transformations (out of 17,280).  
 - 1 achieves no extra resolution.
 
 
+.. table:: Prefixes starting with *[2100]*, summary stats.
+  :widths: 1 1
+  :column-wrapping: true true true true true true true true
+  :column-alignment: right right right right right right right right 
+  :column-dividers: single single single single single single single single single
+
+  ================= ======== =================== ================ ================= ============== ============== ===============
+  Prefix length     count    min # preserving    max # preserving mean # preserving min # distinct max # distinct mean # distinct
+  ================= ======== =================== ================ ================= ============== ============== ===============
+  1                 1        24                  24               24.000            129            129            129.000
+  2                 129      1                   24               4.395             128            1,294          636.984
+  3                 57,329   1                   12               1.609             196            1,293          1,063.542
+  ================= ======== =================== ================ ================= ============== ============== ===============
+
+
+
 Usefulness
 ==========
 
