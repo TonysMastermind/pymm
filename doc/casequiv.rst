@@ -1,7 +1,17 @@
-
-==========================
+=========================
  Case-Equivalent analysis
-==========================
+=========================
+
+
+Contents
+========
+
+.. toctree::
+   :maxdepth: 2
+
+   tree-analysis
+   tree-analysis-2
+
 
 Terms
 =====
