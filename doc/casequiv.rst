@@ -30,14 +30,14 @@ Case equivalent: :math:`eqv(x, y)_{\vec{g}}`
   of guesses (codes)* :math:`\vec{g}` when there is a transformation in 
   :math:`preserving(\vec{g})` mapping :math:`x` to :math:`y`; or
 
-  :math:`eqv(x,y)_{\vec{g}} \iff \exists t \in invariant(\vec{g}): t(x) = y`, or
+  :math:`eqv(x,y)_{\vec{g}} \iff \exists t \in preserving(\vec{g}): t(x) = y`, or
 
   :math:`eqv(x,y)_{\vec{g}} \iff \exists t \in T: t(\vec{g}) = \vec{g} \land t(x) = y`
 
 :math:`distinct(\vec{g})`
   The smallest set of case equivalent codes following :math:`\vec{g}`:
 
-  :math:`\left\{\forall x \in (C - \vec{g}): min(t(x) \forall t \in invariant(\vec{g})) \right\}`, or
+  :math:`\left\{\forall x \in (C - \vec{g}): min(t(x) \forall t \in preserving(\vec{g})) \right\}`, or
 
   :math:`\bigcup_{x \in (C - \vec{g})} min(y \in C: eqv(x, y)_{\vec{g}})`
 
