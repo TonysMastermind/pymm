@@ -77,16 +77,18 @@ class Context(object):
         """Parent context; may be null."""
 
         self.path = path
-        """Code/Score path to the tree."""
-
-        self.prefix = tuple(map(lambda p: p[0], path))
-        """Code sequence before the tree."""
+        """Path to the tree; a sequence of (Code, Score) pairs leading to the tree."""
 
         self.tree = tree
         """Subtree associated with the context."""
 
         self.root = tree['root']
         """Root of the subtree associated with the context."""
+
+        self.prefix = tuple(map(lambda p: p[0], path)) + (self.root,)
+        """Code prefix sequence to the tree, including own root.  This is 
+        one element longer than the path, and does not include scores."""
+
 
     def child(self, score, subtree):
         """Children of the class must implement this method.  The method 
