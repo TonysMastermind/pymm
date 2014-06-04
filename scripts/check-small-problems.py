@@ -1,5 +1,5 @@
 from mm import CODETABLE
-from mm.treewalk import walkfile, path2prefix
+from mm.treewalk import visitfile, path2prefix
 from mm.xforms import TransformTable
 
 import argparse
@@ -87,7 +87,7 @@ def main():
 
     fname = args.fname
 
-    walkfile(ACTIONS[args.simple], fname=fname)
+    visitfile(ACTIONS[args.simple], fname=fname)
 
     print "========================"
     if args.simple:

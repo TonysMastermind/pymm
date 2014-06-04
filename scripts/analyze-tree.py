@@ -1,5 +1,5 @@
 from mm import CODETABLE
-from mm.treewalk import walkfile, path2prefix
+from mm.treewalk import visitfile, path2prefix
 from mm.xforms import TransformTable
 
 import argparse
@@ -99,7 +99,7 @@ def main():
 
     fname = args.fname
 
-    walkfile(action, fname=fname)
+    visitfile(action, fname=fname)
 
     global PRINTED_PFX_LEN
     PRINTED_PFX_LEN = (len(str(CODETABLE.CODES[0]))+2) * MAX_PFX_LEN + 2
