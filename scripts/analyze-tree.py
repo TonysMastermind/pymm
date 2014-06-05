@@ -95,7 +95,7 @@ def action(ctx):
     nd_in = len(ctx.distinct_followers_in_problem)
     nd_all = len(ctx.distinct_followers)
 
-    pp = path[:-1]
+    pp = path
     if not pp in SEEN:
         ALL_PREFIXES.add(vpfx)
         PREFIX_USE_COUNT[vpfx] += 1
