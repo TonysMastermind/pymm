@@ -29,13 +29,24 @@ class PrefixGen(object):
             *d* is considered *inefficient*.
         """
 
-    def _distinct(self, xfset, exclusions):
-        codeset = (self.xftbl.CODESET - exclusions)
-        if not xfset:
-            return codeset
-        return frozenset(min(CODETABLE.encode(self.xftbl.apply(t, v)) for t in xfset)
-                         for v in codeset) - exclusions
+    def distinct_subset(self, xfset, codeset, exclusions):
+        """Distinct subset of a set of codes under a set of transformations.
 
+        :param xfset: a set of transformations; instances of :py:class:`.xforms.Transfrom`.
+        :param codeset: a set of codes, in numeric form.
+        :param exclusions: a set of codes, in numeric form, to exclude from the results.
+        :return: a subset of *codeset* representing the codes that are distinct
+          under the proposet set of equivalence transformations *xfset*.
+        """
+        if not xfset:
+            return frozenset(codeset) - frozenset(exclusions)
+        if len(xfset) == 1 and self.xftbl.IDENTITY in xfset:
+            return frozenset(codeset) - frozenset(exclusions)
+        return frozenset(min(CODETABLE.encode(self.xftbl.apply(t, v)) for t in xfset)
+                         for v in self._vset(codeset)) - frozenset(exclusions)
+
+    def _distinct(self, xfset, exclusions):
+        return self.distinct_subset(xfset, CODETABLE.ALL, exclusions)
 
     def prefixes(self, first, maxlen):
         """Generator of distinct prefixes, starting with a specific code.
@@ -59,14 +70,14 @@ class PrefixGen(object):
         if pfx:
             xfset = self.xftbl.preserving(pfx, xfset)
 
-        return self._distinct(xfset, frozenset(pfx))
+        return self._distinct(xfset, pfx)
 
     def _vset(self, pfx):
         return frozenset(CODETABLE.CODES[c] for c in pfx)
 
     def _prefixes(self, p, invp, maxlen, d=None):
         if d is None:
-            d = self._distinct(invp, self._vset(p))
+            d = self._distinct(invp, p)
 
         yield (p, invp, d)
 
@@ -78,7 +89,7 @@ class PrefixGen(object):
         for c in dprev:
             nxt = p + (c,)
             invnxt = self.xftbl.preserving(nxt, invp)
-            dnxt = self._distinct(invnxt, self._vset(nxt))
+            dnxt = self._distinct(invnxt, nxt)
 
             if self.skip_non_reducing:
                 if (len(invnxt) == len(invp)) or (len(dnxt) <= lendprev):

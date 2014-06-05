@@ -17,7 +17,7 @@ class IdentityTestTestCase(ut.TestCase):
         observed = pgen.distinct_after((8,))
         inv = pgen.xftbl.preserving((8,))
         expected = set()
-        for v in pgen.xftbl.CODESET - frozenset((CODETABLE.CODES[8],)):
+        for v in pgen.xftbl.CODESET:
             c = min(map(lambda v: CODETABLE.encode(v), 
                         map(lambda xf: pgen.xftbl.apply(xf, v), inv)))
             expected.add(c)
@@ -36,16 +36,18 @@ class IdentityTestTestCase(ut.TestCase):
         observed = pgen.distinct_after((8,))
         inv = pgen.xftbl.preserving((8,))
         expected = set()
-        for v in pgen.xftbl.CODESET - frozenset((CODETABLE.CODES[8],)):
+        for v in pgen.xftbl.CODESET:
             c = min(map(lambda v: CODETABLE.encode(v), 
                         map(lambda xf: pgen.xftbl.apply(xf, v), inv)))
             expected.add(c)
         expected -= set((8,))
         expected = frozenset(expected)
         self.assertEqual(expected, observed)
+        self.assertNotIn(8, expected)
+        self.assertNotIn(8, observed)
 
         prefix_data = tuple(pgen.prefixes(8, 2))
-        followers = (x[0][1] for x in prefix_data[1:])
+        followers = tuple(x[0][1] for x in prefix_data[1:])
         for f in followers:
             self.assertIn(f, observed)
             self.assertIn(f, expected)

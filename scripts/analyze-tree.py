@@ -1,6 +1,8 @@
 from mm import CODETABLE
-from mm.treewalk import TreeWalker
+from mm.partition import PartitionResult
+from mm.treewalk import TreeWalker, Context
 from mm.xforms import TransformTable
+from mm.distinct import PrefixGen
 
 import argparse
 from collections import defaultdict
@@ -8,16 +10,40 @@ import locale
 import os
 import sys
 
+PFXGEN = None
+
 ALL_PREFIXES = set()
 PREFIX_USE_COUNT = defaultdict(int)
 SEEN = set()
 LENGTH_SIZE_MAP = defaultdict(lambda: defaultdict(int))
 XFTBL = TransformTable()
-PRESERVING = {}
 
 RECORDS = []
 MAX_PFX_LEN = 0
 PRINTED_PFX_LEN = 0
+
+class Ctx(Context):
+    def __init__(self, parent, path, tree):
+        super(Ctx, self).__init__(parent, path, tree)
+
+        if parent is None:
+            self.problem = CODETABLE.ALL
+        else:
+            score = path[-1][1]
+            self.problem = parent.subproblems[score]
+
+        p = PartitionResult(self.problem, self.root)
+        self.subproblems = p.parts
+
+        self.distinct_followers = None
+        self.preserving = None
+        if self.parent:
+            self.preserving = XFTBL.preserving(self.prefix, parent.preserving)
+        else:
+            self.preserving = XFTBL.preserving(self.prefix, XFTBL.ALL)
+
+        self.distinct_followers = PFXGEN.distinct_subset(self.preserving, CODETABLE.ALL, self.prefix)
+        self.distinct_followers_in_problem = PFXGEN.distinct_subset(self.preserving, self.problem, self.prefix)
 
 def pad(s, c):
     delta = max(0, c[1] - len(s))
@@ -59,15 +85,15 @@ def action(ctx):
 
     vpfx = tuple(map(lambda c: CODETABLE.CODES[c], cpfx))
 
-    inv = PRESERVING.get(cpfx)
-    if not inv:
-        if cpfx:
-            i0 = PRESERVING.get(cpfx[:-1])
-            inv = XFTBL.preserving((cpfx[-1],), i0)
-            PRESERVING[cpfx] = inv
-        else:
-            PRESERVING[cpfx] = XFTBL.ALL
-            inv = XFTBL.ALL
+    inv = ctx.preserving
+    i0 = None
+    if ctx.parent:
+        i0 = ctx.parent.preserving
+    else:
+        i0 = XFTBL.ALL
+
+    nd_in = len(ctx.distinct_followers_in_problem)
+    nd_all = len(ctx.distinct_followers)
 
     pp = path[:-1]
     if not pp in SEEN:
@@ -77,7 +103,7 @@ def action(ctx):
         MAX_PFX_LEN = max(len(vpfx), MAX_PFX_LEN)
 
     insoln = tree['in_solution']
-    RECORDS.append((vpfx, insoln, (mx == 1), len(children), psize, mx, len(inv)))
+    RECORDS.append((vpfx, insoln, (mx == 1), len(children), psize, mx, len(inv), nd_in, nd_all))
 
     return True
 
@@ -98,7 +124,11 @@ def main():
 
     fname = args.fname
 
-    tw = TreeWalker(action)
+    global PFXGEN
+    PFXGEN = PrefixGen()
+    PFXGEN.skip_non_reducing = True
+
+    tw = TreeWalker(action, Ctx)
 
     tw.walkfile(fname)
 
@@ -111,13 +141,15 @@ def main():
         ('#children', max(len('#children'), 6), 'l'),
         ('problem size', max(len('problem size'), 6), 'l'),
         ('max subproblem', max(len('max subproblem'), 6), 'l'),
-        ('#preserving', max(len('#preserving'), 6), 'l'))
+        ('#preserving', max(len('#preserving'), 6), 'l'),
+        ('#distinct/in', max(len('#distinct/in'), 4), 'l'),
+        ('#distinct/all', max(len('#distinct/all'), 4), 'l'))
 
     separator = ' '.join(map(lambda c: '=' * c[1], columns))
 
     header = ' '.join(map(lambda c: pad(c[0], c), columns))
 
-    formats = ("%s", "%s", "%5d", "%5d", "%5d", "%6d")
+    formats = ("%s", "%s", "%5d", "%5d", "%5d", "%6d", "%4d", "%4d")
 
     locale.setlocale(locale.LC_ALL, 'en_US')
 
@@ -142,15 +174,17 @@ def main():
     print '  ' + header
     print '  ' + separator
 
-    for r in sorted(RECORDS, lambda a, b: cmp(a[0], b[0]) or cmp(b[4], a[4])):
-        (pfx, insoln, optimal, nchildren, psize, maxprob, ninv) = r
+    for r in sorted(RECORDS, lambda a, b: cmp(len(a[0]), len(b[0])) or cmp(a[0], b[0]) or cmp(b[4], a[4])):
+        (pfx, insoln, optimal, nchildren, psize, maxprob, ninv, nd_in, nd_all) = r
         fields = (format_prefix(pfx),
                   ''.join((('\\$' if psize <= CODETABLE.NSCORES else ''), 
                            ('' if insoln else '\\*'), ('\\+' if optimal else ''))),
                   nchildren,
                   psize,
                   maxprob,
-                  ninv)
+                  ninv,
+                  nd_in,
+                  nd_all)
 
         printable = map(lambda i: locale.format(i[0], i[1], grouping=True), zip(formats, fields))
         printable = map(lambda i: pad(i[0], i[1]), zip(printable, columns))
