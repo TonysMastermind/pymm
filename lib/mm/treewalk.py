@@ -85,7 +85,10 @@ class Context(object):
         self.root = tree['root']
         """Root of the subtree associated with the context."""
 
-        self.prefix = tuple(map(lambda p: p[0], path)) + (self.root,)
+        self.prefix = (parent.prefix \
+                           if parent \
+                           else tuple(map(lambda p: p[0], path))) \
+                           + (self.root,)
         """Code prefix sequence to the tree, including own root.  This is 
         one element longer than the path, and does not include scores."""
 
