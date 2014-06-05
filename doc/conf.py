@@ -19,14 +19,18 @@ sys.path.insert(0, os.path.abspath('../lib'))
 
 # Sphinx attempts to reuse previously generated or saved state, causing
 # some updates not to appear.
-print ">>> Clearing previous runs."
-for p in os.listdir('generated'):
-    if os.path.isfile(p):
-        try:
-            os.remove(p)
-        except:
-            traceback.print_exc()
-            pass
+subdir = "generated"
+if os.path.exists(subdir):
+    print ">>> Clearing previous runs from " + os.getcwd() + "/generated"
+    for p in os.listdir(subdir):
+        path = os.path.join(subdir, p)
+        if os.path.isfile(path):
+            try:
+                os.remove(path)
+            except:
+                traceback.print_exc()
+                pass
+    print ">>> done."
 
 shutil.rmtree('../build/sphinx', ignore_errors=True)
 
