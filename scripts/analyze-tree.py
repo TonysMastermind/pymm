@@ -1,5 +1,5 @@
 from mm import CODETABLE
-from mm.treewalk import visitfile, path2prefix
+from mm.treewalk import TreeWalker
 from mm.xforms import TransformTable
 
 import argparse
@@ -7,10 +7,6 @@ from collections import defaultdict
 import locale
 import os
 import sys
-
-def prefix(path):
-    return tuple(map(lambda c: CODETABLE.CODES[c], path2prefix(path)))
-
 
 ALL_PREFIXES = set()
 PREFIX_USE_COUNT = defaultdict(int)
@@ -37,12 +33,16 @@ def format_prefix(p):
     s += ' ' * (PRINTED_PFX_LEN - len(s))
     return s
 
-def action(path, tree):
+def action(ctx):
     global ALL_PREFIXES
     global PREFIX_USE_COUNT
     global SEEN
     global MAX_PFX_LEN
     global RECORDS
+
+    tree = ctx.tree
+    path = ctx.path
+    cpfx = ctx.prefix
 
     psize = tree['problem_size']
     if psize <= 2:
@@ -57,8 +57,7 @@ def action(path, tree):
         children = {}
         mx = 0
 
-    pfx = prefix(path)
-    cpfx = path2prefix(path)
+    vpfx = tuple(map(lambda c: CODETABLE.CODES[c], cpfx))
 
     inv = PRESERVING.get(cpfx)
     if not inv:
@@ -72,13 +71,13 @@ def action(path, tree):
 
     pp = path[:-1]
     if not pp in SEEN:
-        ALL_PREFIXES.add(pfx)
-        PREFIX_USE_COUNT[pfx] += 1
+        ALL_PREFIXES.add(vpfx)
+        PREFIX_USE_COUNT[vpfx] += 1
         SEEN.add(pp)
-        MAX_PFX_LEN = max(len(pfx), MAX_PFX_LEN)
+        MAX_PFX_LEN = max(len(vpfx), MAX_PFX_LEN)
 
     insoln = tree['in_solution']
-    RECORDS.append((pfx, insoln, (mx == 1), len(children), psize, mx, len(inv)))
+    RECORDS.append((vpfx, insoln, (mx == 1), len(children), psize, mx, len(inv)))
 
     return True
 
@@ -99,7 +98,9 @@ def main():
 
     fname = args.fname
 
-    visitfile(action, fname=fname)
+    tw = TreeWalker(action)
+
+    tw.walkfile(fname)
 
     global PRINTED_PFX_LEN
     PRINTED_PFX_LEN = (len(str(CODETABLE.CODES[0]))+2) * MAX_PFX_LEN + 2

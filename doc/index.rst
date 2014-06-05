@@ -34,5 +34,6 @@ Code documentation
    mm.partition
    mm.score
    mm.singleton
+   mm.treewalk
    mm.xforms
 

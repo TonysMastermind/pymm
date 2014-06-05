@@ -1,3 +1,8 @@
+"""Tree walker for anlayzing game trees, represented as dictionaries.
+
+The tree walker can operates on tree dictionaries, or produce the trees from
+JSON data files.
+"""
 import json
 import sys
 
@@ -7,29 +12,13 @@ class Unimplemented(Exception):
     pass
 
 
-def _visit(path, tree, action):
-    if action(path, tree):
-        root = tree['root']
-        children = tree.get('children')
-        if children:
-            for (score, child) in children.iteritems():
-                _visit(path + (root, score,), child, action)
-
-
-def path2prefix(path):
-    return tuple(x for (i, x) in zip(range(len(path)), path) if i % 2 == 0)
-
-def visit(tree, action):
-    """:param tree: tree, expressed as a dictionary.
-    :type tree: dict.
-    :param action: callable action function, invoked as ``action(tree)``, should return
-      *True* for deeper recursion, *False* to stop deeper recursion.
-    :type action: callable.
-    """
-    _visit(tuple(), tree, action)
-
-
 def loadfile(fname=None):
+    """Reads a JSON file from a named file or stadnard input.
+
+    :param fname: name of the file, an empty or null file name indicates
+      that input is from :py:data:`sys.stdin`.
+    :return: dictionary reprsenting a strategy tree.
+    """
     fp = sys.stdin
     if fname:
         fp = open(fname, 'r')
@@ -43,13 +32,26 @@ def loadfile(fname=None):
     return d
 
 
-def visitfile(action, fname=None):
-    d = loadfile(fname)
-    visit(d, action)
-
-
 class Context(object):
-    """Traversal context for a recursive tree walk. Minimal parent."""
+    """Traversal context for a recursive tree walk.
+
+    A *tree* represents a strategy for solving a specific 
+    *mastermind problem*.  The problem is a set of codes.  The root
+    node of the tree has a root code representing the initial guess
+    against the tree's problem, and edges to subtrees labeled by the
+    possible responses to that initial guess.
+
+    The traversal context contains information about the path, from
+    the root of the tree, to the subtree being analyzed, a reference
+    to the parent context, and a reference to the subtree itself.
+
+    The :py:attr:`.Context.prefix` attribute contains the code sequence
+    prefix to the root, including the root.
+
+    The :py:attr:`.Context.path` attribute contains the sequence of
+    *(guess, score)* defining the path to the current subtree.
+    
+    """
 
     def __init__(self, parent, path, tree):
         """:param parent: parent context; None for initial tree.
@@ -106,21 +108,51 @@ class Context(object):
                               subtree)
 
 class TreeWalker(object):
+    """Encapsulation of a depth-first tree traversal algorithm."""
+
     def __init__(self, action, context=Context):
+        """
+        :param action: a callable function with one argument, which will be an
+          instance of :py:class:`.Context`.  If the function returns *True*, the
+          tree walk algorithm will recurse into the children of the visited tree,
+          otherwise, otherwise, the traversal returns.
+        :param context: the class of traversal context, must be a subclass of
+          :py:class:`.Context`, or have a duck-type compatible interface.
+        """
+
         self.action = action
+        """Action function, invoked with a context object."""
+
         self.context = context
+        """Class to use for creating traversal context."""
 
 
     def walkfile(self, fname=None):
+        """
+        :param fname: name of the file to read the JSON encoding of the tree from.
+          If null, the loader will use :py:data:`sys.stdin`.
+        """
         tree = loadfile(fname)
         self.walktree(tree)
 
 
     def walktree(self, tree):
+        """Starts a tree walk for the input tree.
+
+        :param tree: the strategy to be traversed.
+        """
         ctx = self.context(None, tuple(), tree)
         self.walk(ctx)
 
     def walk(self, ctx):
+        """The recursive step of the tree walk.  Given a traversal
+        context, the method will apply the action at the context.
+        If the supplied :py:data:`.TreeWalker.action` function returns
+        *True*, the method will recurse into the subtrees of the 
+        current tree; otherwise, the traversal stops.
+
+        :param ctx: A traversal context.
+        """
         if self.action(ctx):
             root = ctx.root
             children = ctx.tree.get('children')
