@@ -29,11 +29,13 @@ Code documentation
    :toctree: generated
 
    mm
+   mm.descr
    mm.distinct
    mm.loader
    mm.partition
    mm.score
    mm.singleton
    mm.treewalk
+   mm.usage
    mm.xforms
 
