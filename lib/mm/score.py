@@ -135,7 +135,7 @@ class ScoreTable(singleton.SingletonBehavior):
 
     def __init__(self):
         self.SCORES = _genscores()
-        """Table mapping numeric scores to mm.score.score objects."""
+        """Table mapping numeric scores to :py:class:`.Score` objects."""
 
         self.SCORE_TABLE = _genscoretable()
         """Triangular matrix storing scores of all possible code pairs."""
