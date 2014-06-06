@@ -5,4 +5,8 @@ here=$(realpath $(dirname $me))
 lib=$(realpath $here/../lib)
 export PYTHONPATH=${lib}:$PYTHONPATH
 
-exec python2.7 ${me}.py "$@"
+if [ -z "$PYTHON" ]; then
+    $PYTHON=python2.7
+fi
+
+exec $PYTHON ${me}.py "$@"
