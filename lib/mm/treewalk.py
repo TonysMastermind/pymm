@@ -3,6 +3,10 @@
 The tree walker can operates on tree dictionaries, or produce the trees from
 JSON data files.
 """
+
+from . import CODETABLE
+from . import score
+
 import json
 import sys
 
@@ -59,10 +63,10 @@ class Context(object):
       
     """
 
-    def __init__(self, parent, path, tree):
+    def __init__(self, parent, path, root):
         """:param parent: parent context; None for initial tree.
         :param path: a sequence of *(code, score)*  pairs that leads to the subtree.
-        :param tree: subtree associated with the context.
+        :param root: root code of subtree associated with the context.
 
         A child class's initializer would look like:
 
@@ -87,10 +91,7 @@ class Context(object):
         self.path = path
         """Path to the tree; a sequence of (Code, Score) pairs leading to the tree."""
 
-        self.tree = tree
-        """Subtree associated with the context."""
-
-        self.root = tree['root']
+        self.root = root
         """Root of the subtree associated with the context."""
 
         self.prefix = (parent.prefix \
@@ -101,22 +102,48 @@ class Context(object):
         one element longer than the path, and does not include scores."""
 
 
-    def child(self, score, subtree):
+    def child(self, score, root, *args, **kwargs):
         """Children of the class must implement this method.  The method 
         creates a context suitable for visiting the subtree specified by *score*
         with a root code of *root*.
 
-        :param subtree: numeric code at the root of the subtree.
+        :param root: numeric code at the root of the subtree.
+        :param args: optional unnamed args passed from child implementation.
+        :param kwargs: optional named args passed from child implementation.
         :return: an instance of the object.
         """
         return self.__class__(self, 
                               (self.path + ((self.root, score),)), 
-                              subtree)
+                              root, *args, **kwargs)
+
+
+class TreeWalkerContext(Context):
+    """A specialization of :py:class:`.Context` for walking pre-built
+    trees with a dictionary representation."""
+
+    def __init__(self, parent, path, root, tree=None):
+        """
+        :param parent: see :py:class:`.Context`.
+        :param path: see :py:class:`.Context`.
+        :param root: see :py:class:`.Context`.
+        :param tree: optional prebuilt tree to process.
+        """
+        super(TreeWalkerContext, self).__init__(parent, path, root)
+        self.tree = tree
+
+
+    def child(self, score, root):
+        """Override of parent implementation to pass the subtree.
+        """
+        children = self.tree['children']
+        subtree = children.get(score, children.get(str(score)))
+        return super(TreeWalkerContext, self).child(score, root, tree=subtree)
+
 
 class TreeWalker(object):
     """Encapsulation of a depth-first tree traversal algorithm."""
 
-    def __init__(self, action, context=Context):
+    def __init__(self, action, context=TreeWalkerContext):
         """
         :param action: a callable function with one argument, which will be an
           instance of :py:class:`.Context`.  If the function returns *True*, the
@@ -147,8 +174,14 @@ class TreeWalker(object):
 
         :param tree: the strategy to be traversed.
         """
-        ctx = self.context(None, tuple(), tree)
+        ctx = self.context(None, tuple(), tree['root'], tree=tree)
         self.walk(ctx)
+
+
+    def _childctx(self, ctx, score, child):
+        c = ctx.child(score, child['root'])
+        return c
+
 
     def walk(self, ctx):
         """The recursive step of the tree walk.  Given a traversal
@@ -164,5 +197,29 @@ class TreeWalker(object):
             children = ctx.tree.get('children')
             if children:
                 for (score, child) in children.iteritems():
-                    self.walk(ctx.child(int(score), child))
+                    self.walk(self._childctx(ctx, int(score), child))
+
+
+def play(secret, tree):
+    """Play the strategy tree against the secret code.
+
+    :param secret: numeric code to use as the hidden code.
+    :param tree: strategy tree, expressed as a dictionary.
+    :return: a sequence of *(code, score)* pairs, terminating
+      with perfect score and the secret code.
+    """
+    path = []
+    cur = tree
+    while cur:
+        root = cur['root']
+        s = score.score(root, secret)
+        path.append((root, s))
+        if s == CODETABLE.PERFECT_SCORE:
+            break
+
+        children = cur.get('children')
+        if children:
+            cur = children.get(s, children.get(str(s)))
+
+    return tuple(path)
 

@@ -1,6 +1,6 @@
 from mm import CODETABLE
 from mm.partition import PartitionResult
-from mm.treewalk import TreeWalker, Context
+from mm.treewalk import TreeWalker, TreeWalkerContext, play, loadfile
 from mm.xforms import TransformTable
 from mm.distinct import PrefixGen
 
@@ -22,9 +22,9 @@ RECORDS = []
 MAX_PFX_LEN = 0
 PRINTED_PFX_LEN = 0
 
-class Ctx(Context):
-    def __init__(self, parent, path, tree):
-        super(Ctx, self).__init__(parent, path, tree)
+class Ctx(TreeWalkerContext):
+    def __init__(self, parent, path, root, tree=None):
+        super(Ctx, self).__init__(parent, path, root, tree=tree)
 
         if parent is None:
             self.problem = CODETABLE.ALL
@@ -107,6 +107,18 @@ def action(ctx):
 
     return True
 
+class Summary(object):
+    def __init__(self, tree):
+        games = map(lambda c: play(c, tree), CODETABLE.ALL)
+        self.maxlen = max(map(len, games))
+        self.moves = sum(map(len, games))
+
+    def mean_game(self):
+        return float(self.moves)/CODETABLE.NCODES
+
+    def longest_game(self):
+        return self.maxlen
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -130,7 +142,9 @@ def main():
 
     tw = TreeWalker(action, Ctx)
 
-    tw.walkfile(fname)
+    tree = loadfile(fname)
+    tw.walktree(tree)
+    summary = Summary(tree)
 
     global PRINTED_PFX_LEN
     PRINTED_PFX_LEN = (len(str(CODETABLE.CODES[0]))+2) * MAX_PFX_LEN + 2
@@ -155,7 +169,9 @@ def main():
 
     print title
     print '=' * len(title)
-    print ""
+    print "\nAverage game: {:.4f} moves, Longest game: {} moves\n\n".format(
+        summary.mean_game(), 
+        locale.format("%d", summary.longest_game(), grouping=True))
 
     print """.. table:: Prefix properties of a game tree %s
   :widths: %s
