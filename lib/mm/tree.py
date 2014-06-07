@@ -208,17 +208,17 @@ class Tree(object):
             self.root_in_solution = s.in_solution = pr.stats.in_solution
             s.optimal = pr.stats.optimal
 
-        children = filter(lambda p: p[1], zip(_SCORE_LIST, self.children))
+        children = filter(lambda p: p, self.children)
         if len(children) == 0:
             s.total_moves = 1
             s.min_depth = s.max_depth = 1
             s.problem_size = 1
             return
 
-        mn = min(c.stats.min_depth for (_, c) in children)
-        mx = 1 + max(c.stats.max_depth for (_, c) in children)
-        sz = sum(c.stats.problem_size for (_, c) in children)
-        tot = sum(c.stats.total_moves+c.stats.problem_size for (_, c) in children)
+        mn = min(c.stats.min_depth for c in children)
+        mx = 1 + max(c.stats.max_depth for c in children)
+        sz = sum(c.stats.problem_size for c in children)
+        tot = sum(c.stats.total_moves + c.stats.problem_size for c in children)
         if self.root_in_solution:
             sz  = sz + 1
             tot = tot + 1
@@ -290,7 +290,11 @@ def optimal_tree(pr):
     :return: a tree.
     """
     t = Tree(pr.root)
-    for (score, prob) in zip(_SCORE_LIST, pr.parts):
+    for score in _SCORE_LIST:
+        if score == CODETABLE.PERFECT_SCORE:
+            t.in_solution = True
+            continue
+        prob = pr.parts[score]
         if prob:
             if len(prob) != 1:
                 raise MMException("Partition of size {} is not legal in an optimal partition result.".format(

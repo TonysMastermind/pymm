@@ -16,7 +16,7 @@ _MAX_PARTS = CODETABLE.NSCORES - 1
 _PROBLEM_SIZE_LIMITS = [ -1, 1 ]
 _MAX_REMAINING = 1000
 
-_SCORE_LIST = range(CODETABLE.NCODES)
+_SCORE_LIST = range(CODETABLE.NSCORES)
 
 def size_limit(remaining):
     """
@@ -259,7 +259,8 @@ class TreeBuilder(descr.WithDescription):
                     return evaluator.best(state)
             else:
                 subtrees = [None] * CODETABLE.NSCORES
-                for (score, prob) in zip(_SCORE_LIST, pr.parts):
+                for score in _SCORE_LIST:
+                    prob = pr.parts[score]
                     if (not prob) or (score == CODETABLE.PERFECT_SCORE):
                         continue
 
@@ -275,8 +276,8 @@ class TreeBuilder(descr.WithDescription):
                     continue
 
                 t = tree.Tree(pr.root)
-                for (score, child) in zip(_SCORE_LIST, subtrees):
-                    t.add_child(score, child)
+                for score in _SCORE_LIST:
+                    t.add_child(score, subtrees[score])
                 t.update_stats(pr)
 
                 if evaluator.evaluate(ctx, t, state):
