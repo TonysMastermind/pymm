@@ -187,7 +187,7 @@ class BuilderContext(object):
     def candidate_guesses(self):
         """Returns a selection of guesses suitable for solving the current problem.
 
-        :return: an iterable collection of :py:class:`.PartitionResult` instances.
+        :return: an iterable of :py:class:`.PartitionResult` instances.
 
         If the attribute :py:attr:`.candidates`, then method returns its value.
         Otherwise, it delegates to the method :py:meth:`.BuilderContext.compute_candidates`.
@@ -200,6 +200,8 @@ class BuilderContext(object):
 
     def compute_candidates(self):
         """Returns a collection of candidate guesses suitable for use on the context's problem.
+
+        :return: an iterable of :py:class:`.PartitionResult` instances.
 
         This method is expected to derive the candidates algorithmically from the problem, and is
         the critical specialization point of this class.
