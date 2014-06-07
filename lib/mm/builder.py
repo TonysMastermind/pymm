@@ -3,6 +3,7 @@
 from . import *
 from . import partition 
 from . import descr 
+from . import score
 from . import tree
 from . import usage
 
@@ -116,6 +117,9 @@ class BuilderContext(object):
           the problem.
         :type candidates: collection of :py:class:`.partition.PartitionResult`
         """
+
+        score.initialize()
+
         self.candidates = candidates
         """Preselected initial guess candidats."""
 
