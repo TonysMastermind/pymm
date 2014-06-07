@@ -9,6 +9,7 @@ from . import usage
 
 from partition import PartitionResult
 
+from collections import namedtuple
 import random
 
 _MAX_PARTS = CODETABLE.NSCORES - 1
@@ -102,12 +103,25 @@ class SolutionEvaluator(descr.WithDescription):
         return descr.base_description(clazz)
 
 
+
+BuilderStep = namedtuple('BuilderStep', ['root', 'score', 'origin'])
+"""Derivation step from a :py:class:`.BuilderContext` to a child instance.
+
+:param origin: the :py:class:`.BuilderContext` where the problem resides.
+:param root: a mastermind numeric code representing a guess againts the origin's problem.
+:param score: a score resulting from guessing *root* against the origin's problem.
+"""
+
 class BuilderContext(object):
     """Tree construction context."""
 
     SOLUTION_EVALUATOR = SolutionEvaluator
+    """Solution evaluator class."""
 
-    def __init__(self, parent, problem, step, candidates=None):
+    STEP_CLASS = BuilderStep
+    """Step class."""
+
+    def __init__(self, problem, step, candidates=None):
         """
         :param parent: parent context.
         :param problem: problem to be solved.
@@ -123,7 +137,7 @@ class BuilderContext(object):
         self.candidates = candidates
         """Preselected initial guess candidats."""
 
-        self.parent = parent
+        self.parent = None
         """Parent context."""
 
         self.problem = problem
@@ -135,12 +149,24 @@ class BuilderContext(object):
         self.prefix = None
         """A sequence of numeric codes, representing the first elements :py:attr:`.BuilderContext.path` items."""
 
-        if parent:
-            self.path = parent.path + (step,)
-            self.prefix = parent.prefix + (step[0],)
+        if step:
+            self.parent = step.origin
+            self.path = self.parent.path + (step,)
+            self.prefix = self.parent.prefix + (step.root,)
         else:
+            self.parent = None
             self.path = tuple()
             self.prefix = tuple()
+
+
+    def step(self, root, score):
+        """Constructs a solution step.
+
+        :param root: mastermind code in numeric form.
+        :param score: match score in numeric form.
+        :return: an instance of :py:class:`.BuilderStep`
+        """
+        return self.STEP_CLASS(root, score, self)
 
 
     @property
@@ -148,10 +174,12 @@ class BuilderContext(object):
         """:return: the length of the parent chain above."""
         return len(self.path)
 
+
     @property
     def problem_size(self):
         """:return: the size of the mastermind problem."""
         return len(self.problem)
+
 
     def candidate_guesses(self):
         """Returns a selection of guesses suitable for solving the current problem.
@@ -228,7 +256,7 @@ class TreeBuilder(descr.WithDescription):
         if root:
             candidates = (PartitionResult(self.root_problem, root),)
 
-        ctx = self.strategy(None, self.root_problem, None, candidates)
+        ctx = self.strategy(self.root_problem, None, candidates)
         (u, t) = usage.time(lambda: self._solve(ctx, maxdepth))
         return tree.TreeResult(t, maxdepth, self.strategy, u)
 
@@ -264,7 +292,7 @@ class TreeBuilder(descr.WithDescription):
                     if (not prob) or (score == CODETABLE.PERFECT_SCORE):
                         continue
 
-                    child = self._solve(self.strategy(ctx, prob, (pr.root, score)), 
+                    child = self._solve(self.strategy(prob, ctx.step(pr.root, score)),
                                         remaining - 1)
                     if not child:
                         subtrees = None
