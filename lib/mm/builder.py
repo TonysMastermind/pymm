@@ -190,10 +190,21 @@ class BuilderContext(object):
         :return: an iterable collection of :py:class:`.PartitionResult` instances.
 
         If the attribute :py:attr:`.candidates`, then method returns its value.
-        Otherwise, the method picks a random member of the problem, and returns it.
+        Otherwise, it delegates to the method :py:meth:`.BuilderContext.compute_candidates`.
+        """
+        if self.candidates:
+            return self.candidates
 
-        The default implementation picks a random member of the problem, unless
-        the is set to a non-null value. 
+        return self.compute_candidates()
+
+
+    def compute_candidates(self):
+        """Returns a collection of candidate guesses suitable for use on the context's problem.
+
+        This method is expected to derive the candidates algorithmically from the problem, and is
+        the critical specialization point of this class.
+
+        The default implementation picks a random member of the problem, and returns it.
 
         .. note::
 
@@ -202,9 +213,6 @@ class BuilderContext(object):
           subproblem has at most *n-1* elements, since the partition result will
           always get populated at the perfect score.
         """
-        if self.candidates:
-            return self.candidates
-
         # Since the strategy consistely chooses from the problem set, the
         # members of the prefix are always excluded from subproblems, making
         # the choice below safe.
