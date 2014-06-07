@@ -176,11 +176,15 @@ class ScoreTable(singleton.SingletonBehavior):
 SCORE_TABLE = None #scoretable()
 """The single instance of :py:class:`.ScoreTable`."""
 
+LOOKUP_TABLE = None
+"""Score lookup table."""
+
 
 def initialize():
     """Initialize global tables."""
 
     global SCORE_TABLE
+    global LOOKUP_TABLE
 
     if SCORE_TABLE is not None:
         return
@@ -191,7 +195,8 @@ def initialize():
     tbl = ldr.get()
 
     SCORE_TABLE = tbl
+    LOOKUP_TABLE = SCORE_TABLE.SCORE_TABLE
 
 
 def score(c1, c2):
-    return SCORE_TABLE.score(c1, c2)
+    return LOOKUP_TABLE[c1][c2]
