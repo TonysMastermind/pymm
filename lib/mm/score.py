@@ -51,7 +51,7 @@ class Score(NamedScoreTuple):
         a = approx
         if e < 0 or e > NPOSITIONS or a < 0 or a > NPOSITIONS or \
                 (e+a) > NPOSITIONS:
-            raise Exception, \
+            raise MMException, \
                 ("Invalid score:(exact={0},approx={1}); " +
                  "range for each: [0,{2}), " +
                  "range for sum:[0,{2}), for exact={3}, approx must be 0.").\
@@ -86,7 +86,7 @@ class Score(NamedScoreTuple):
         :return: :py:class:`.score`.
         """
         if len(v1) != NPOSITIONS or len(v2) != NPOSITIONS:
-            raise Exception, \
+            raise MMException, \
                 "Invalid length; required:{}, v1={}, v2={}.". \
                 format(NPOSITIONS, v1, v2)
 
@@ -100,7 +100,7 @@ class Score(NamedScoreTuple):
                 if a == b:
                     e = e + 1
             else:
-                raise Exception, \
+                raise MMException, \
                     ("Out of range color. a={}, b={}; " + \
                          "range:[0,{}); v1:{}, v2:{}.").\
                     format(a, b, NCOLORS, v1, v2)

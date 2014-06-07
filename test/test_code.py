@@ -28,14 +28,14 @@ class ExceptionsTestCase(ut.TestCase):
         tbl = mm.CODETABLE
 
         
-        self.assertRaises(mm.Exception, tbl.decode, -1)
-        self.assertRaises(mm.Exception, tbl.decode, tbl.NCODES)
+        self.assertRaises(mm.MMException, tbl.decode, -1)
+        self.assertRaises(mm.MMException, tbl.decode, tbl.NCODES)
 
         prefix = (0,) * (tbl.NPOSITIONS - 1)
-        self.assertRaises(mm.Exception, tbl.encode, prefix)
-        self.assertRaises(mm.Exception, tbl.encode, prefix + (0, 0))
-        self.assertRaises(mm.Exception, tbl.encode, prefix + (-1,))
-        self.assertRaises(mm.Exception, tbl.encode, prefix + (tbl.NCOLORS,))
+        self.assertRaises(mm.MMException, tbl.encode, prefix)
+        self.assertRaises(mm.MMException, tbl.encode, prefix + (0, 0))
+        self.assertRaises(mm.MMException, tbl.encode, prefix + (-1,))
+        self.assertRaises(mm.MMException, tbl.encode, prefix + (tbl.NCOLORS,))
 
 if __name__ == '__main__':
     ut.main(verbosity=2)

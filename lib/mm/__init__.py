@@ -23,10 +23,11 @@ def initialize_logging(**kwargs):
     logging.basicConfig(**args)
 
 
-class Exception(exceptions.Exception):
-    """Exception class for this namespace."""
+class MMException(exceptions.Exception):
+    """Exception class for this namespace (also aliased as *MasterMindException*)."""
     pass
 
+MasterMindException = MMException
 
 class Code(tuple):
     """A refinement of :py:class:`tuple` for printability."""
@@ -96,7 +97,7 @@ class CodeTable(object):
         :return: tuple with :py:data:`codetable.NPOSITIONS` color numbers.
         """
         if c < 0 or c >= self.NCODES:
-            raise Exception, "Out of range: code:%d, range:[%d, %d)" % \
+            raise MMException, "Out of range: code:%d, range:[%d, %d)" % \
                 (c, 0, self.NCODES)
         v = []
         t = c
@@ -113,14 +114,14 @@ class CodeTable(object):
         :return: an integer encoding of the code.
         """
         if len(v) != self.NPOSITIONS:
-            raise Exception, \
+            raise MMException, \
                 "Incorrect length:{}, required:{}, v:{}". \
                 format(len(v), self.NPOSITIONS, v)
         c = 0
         t = 1
         for i in v:
             if i < 0 or i >= self.NCOLORS:
-                raise Exception, \
+                raise MMException, \
                     "Out of range: peg:{}, range:[{}, {}); code:{}". \
                     format(i, 0, self.NCOLORS, v)
             c = c + i*t
