@@ -78,7 +78,7 @@ class Loader(object):
                             EOFError, ImportError, IndexError):
                         pass
                     except: # unfortunately, corrupt files raise all sorts of error.
-                        print >>sys.stder, "Error loading data: " + traceback.format_exc()
+                        print >>sys.stderr, "Error loading data: " + traceback.format_exc()
                         
             except IOError:
                 pass
