@@ -217,7 +217,7 @@ class BuilderContext(object):
 
         This method can be specialized to provide more interesting evaluation algorithms.
         """
-        return self.__class__.SOLUTION_EVALUATOR()
+        return self.SOLUTION_EVALUATOR()
     
 
     def possible(self, remaining):
