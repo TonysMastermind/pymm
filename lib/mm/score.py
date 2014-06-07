@@ -138,10 +138,12 @@ class ScoreTable(singleton.SingletonBehavior):
         """Table mapping numeric scores to :py:class:`.Score` objects."""
 
         self.SCORE_TABLE = _genscoretable()
-        """Triangular matrix storing scores of all possible code pairs."""
+        """A matrix storing scores of all possible code pairs.  The width
+        and height are both :py:data:`.CODETABLE.NCODES`, and the contents
+        are small integers representing mastermind scores.
+        """
 
-        self.ENCODED_SCORES = dict((s, i) for (i, s) in 
-                                   enumerate(self.SCORES))
+        self.ENCODED_SCORES = dict((s, i) for (i, s) in enumerate(self.SCORES))
         """Mapping from tuple-scores to numeric encoding; used like
         this:
 
@@ -199,4 +201,10 @@ def initialize():
 
 
 def score(c1, c2):
+    """Returns the scope of *c1* against *c2* encoded as a small integer.
+
+    :param c1: a mastermind code in numeric form.
+    :param c2: a mastermind code in numeric form.
+    :return: score, a small integer in the range 0 .. :py:data:`.CODETABLE.NSCORES`
+    """
     return LOOKUP_TABLE[c1][c2]

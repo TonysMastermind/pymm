@@ -34,6 +34,23 @@ class Ctx(TreeWalkerContext):
                 optimal,
                 problem_size,
                 len(self.problem))
+            return
+
+        children = self.tree.get('children')
+        if not children:
+            return
+
+        total = 1 if self.tree['in_solution'] else 0
+        for t in children.itervalues():
+            total += t['problem_size']
+
+        if total != problem_size:
+            print "Problem size mismatch: path:{}, insoln:{}, optimal:{}, len(problem):{}, sum over children:{}".format(
+                self.path,
+                self.tree['in_solution'],
+                optimal,
+                len(self.problem),
+                total)
 
 
 def action(ctx):
