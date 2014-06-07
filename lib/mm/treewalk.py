@@ -54,13 +54,6 @@ class Context(object):
 
     The :py:attr:`.Context.path` attribute contains the sequence of
     *(guess, score)* defining the path to the current subtree.
-
-    .. note::
-
-      Note that a tree walk can occur while constructing a tree, in addition
-      to traversing a pre-constructed tree; for example, in the *__init__* method
-      of a the tree node.
-      
     """
 
     def __init__(self, parent, path, root):
