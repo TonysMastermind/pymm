@@ -4,24 +4,6 @@
 from . import singleton as singleton
 
 import exceptions
-import logging
-
-def initialize_logging(**kwargs):
-    """Initialize logging with defaults.
-
-    :param kwargs: arguments passed to :py:func:`logging.basicConfig`.
-
-    Defaults:
-      - format: ``%(asctime)s:%(name)s:%(levelname)s:%(message)s``
-      - level: :py:const:`logging.DEBUG`
-    """
-    args = {
-        'format': '%(asctime)s:%(name)s:%(levelname)s:%(message)s',
-        'level': logging.DEBUG
-        }
-    args.update(kwargs)
-    logging.basicConfig(**args)
-
 
 class MMException(exceptions.Exception):
     """Exception class for this namespace (also aliased as *MasterMindException*)."""

@@ -67,7 +67,7 @@ class Timer(descr.WithDescription):
             """Dictionary represenation of the data.
 
             :return: A dictionary representation."""
-            return { 'utime': self.utime, 'stime': self.stime }
+            return { 'utime': self.utime, 'stime': self.stime, 'ctime': self.ctime }
 
 
         def __str__(self):

@@ -9,4 +9,13 @@ if [ -z "$PYTHON" ]; then
     PYTHON=python2.7
 fi
 
-exec $PYTHON ${me}.py "$@"
+b=$(basename $PYTHON)
+m=$(basename $me)
+
+if [ -z "PROFILE" ]; then
+    PROF_ARGS=""
+else
+    PROF_ARGS="-m cProfile -o $m.$b.prof "
+fi
+
+exec $PYTHON $PROF_ARGS ${me}.py "$@"

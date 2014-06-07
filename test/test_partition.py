@@ -5,6 +5,9 @@ import mm.partition as partition
 import mm.score as score
 
 class PartitionResultTestCase(ut.TestCase):
+    def setUp(self):
+        score.initialize()
+
     def test_TopLevelSplit(self):
         all = CODETABLE.ALL
 

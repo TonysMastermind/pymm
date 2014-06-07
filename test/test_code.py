@@ -4,7 +4,6 @@ import mm
 
 class CodeTableTestCase(ut.TestCase):
     def runTest(self):
-        mm.initialize_logging()
         tbl = mm.CODETABLE
 
         v = tbl.decode(0)
@@ -26,7 +25,6 @@ class CodeTableTestCase(ut.TestCase):
 class ExceptionsTestCase(ut.TestCase):
     def runTest(self):
         tbl = mm.CODETABLE
-
         
         self.assertRaises(mm.MMException, tbl.decode, -1)
         self.assertRaises(mm.MMException, tbl.decode, tbl.NCODES)

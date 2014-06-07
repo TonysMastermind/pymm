@@ -2,10 +2,9 @@
 
 import collections
 import cPickle as pickle
-import logging
-# import pickle
 import os
 import os.path
+import sys
 import traceback
 
 _StorageSpecBase = collections.namedtuple('_LoaderSpecBase', ['version', 'path'])
@@ -79,7 +78,7 @@ class Loader(object):
                             EOFError, ImportError, IndexError):
                         pass
                     except: # unfortunately, corrupt files raise all sorts of error.
-                        logging.error("Error loading data: " + traceback.format_exc())
+                        print >>sys.stder, "Error loading data: " + traceback.format_exc()
                         
             except IOError:
                 pass

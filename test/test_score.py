@@ -4,6 +4,9 @@ import mm
 import mm.score
 
 class ScoreTableTestCase(ut.TestCase):
+    def setUp(self):
+        mm.score.initialize()
+
     def runTest(self):
         s = mm.score.score(0, mm.CODETABLE.NCODES-1)
         self.assertTrue(mm.score.ScoreTable.exists())
