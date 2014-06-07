@@ -6,7 +6,7 @@ lib=$(realpath $here/../lib)
 export PYTHONPATH=${lib}:$PYTHONPATH
 
 if [ -z "$PYTHON" ]; then
-    $PYTHON=python2.7
+    PYTHON=python2.7
 fi
 
 exec $PYTHON ${me}.py "$@"
