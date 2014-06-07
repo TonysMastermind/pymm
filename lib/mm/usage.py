@@ -103,10 +103,13 @@ class Timer(descr.WithDescription):
 
 
     def stop(self):
-        """Stops the time, and populates the field :py:attr:`.Timer.delta`."""
-        end = self.getrusage(res.RUSAGE_SELF)
-        self.delta = timer.CPUTime(self._start, end)
+        """Stops the time, and populates the field :py:attr:`.Timer.delta`.
 
+        :return: an instance of :py:class:`.Timer.CPUTime`.
+        """
+        end = self.getrusage(res.RUSAGE_SELF)
+        self.delta = Timer.CPUTime(self._start, end)
+        return self.delta
 
 
 def time(fn):
@@ -122,5 +125,5 @@ def time(fn):
     t = Timer()
     t.start()
     r = fn()
-    t.stop()
-    return (t.delta, r)
+    delta = t.stop()
+    return (delta, r)
