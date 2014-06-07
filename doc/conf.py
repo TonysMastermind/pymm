@@ -209,3 +209,4 @@ autodoc_default_flags = ['members',
 autosummary_generate = True
 autodoc_mock_imports = []
 
+autodoc_member_order = 'groupwise'
