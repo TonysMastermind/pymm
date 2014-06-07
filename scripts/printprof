@@ -7,7 +7,7 @@ def main():
     args = sys.argv[1:]
     for fname in args:
         p = pstats.Stats(fname)
-        p.sort_stats('cumtime').print_stats()
+        p.sort_stats('ncalls').print_stats()
 
 
 if __name__ == '__main__':
