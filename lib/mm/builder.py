@@ -20,20 +20,23 @@ _MAX_REMAINING = 1000
 _SCORE_LIST = range(CODETABLE.NSCORES)
 
 def size_limit(remaining):
-    """
-    A problem of size 2 requires 2 moves.  
+    """Calculates an upper bound on problem size for the given number of guesses.
 
-    Given 4 positions, there are 14 possible scores, and the limits on problem sizes are:
+    This upper bound is a hypothetical number based on the number of possible score values,
+    and the number of guesses, using arithmetic.  For a maximum problem size of :math:`N`, 
+    and :math:`P` possible score values, the limit :math:`L(i)` for *i* moves is:
+
+    - :math:`L(0) = 0`
+    - :math:`L(i+1) = min(1 + (P-1)L(i), N)`
+
+
+    For example, given 4 positions, there are 14 possible scores, and the limits on 
+    problem sizes are:
 
     - For 2 guesses: :math:`1 + 13 = 14`
     - For 3 guesses: :math:`1 + 13(1 + 13)= 183` 
     - For 4 guesses: the upper limit on problem is :math:`1 + 13(1 + 13(1 + 13)) = 2380`,
       which exceeds the maximum problem size in the *(6color, 4pos)* mastermind problem.
-
-    Given a maximum problem size of :math:`N`, and a maximum partition count of :math:`P`, we have:
-
-    - :math:`L(0) = 0`
-    - :math:`L(i+1) = max(1 + (P-1)L(i), N)`
 
     """
 
