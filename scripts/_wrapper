@@ -12,7 +12,7 @@ fi
 b=$(basename $PYTHON)
 m=$(basename $me)
 
-if [ -z "PROFILE" ]; then
+if [ -z "$PROFILE" ]; then
     PROF_ARGS=""
 else
     PROF_ARGS="-m cProfile -o $m.$b.prof "
