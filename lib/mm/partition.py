@@ -130,13 +130,18 @@ class PartitionResult(object):
         :param codes: a set of codes, in numeric encoding.
         :param rootcode: code against which to split the code set.
         """
+        lookup = score.LOOKUP_TABLE
+        if not lookup:
+            score.initialize()
+            lookup = score.LOOKUP_TABLE
 
         self.root = rootcode
         """Root code; the codes are partition by score against the root code."""
 
+        lookup = lookup[rootcode]
         p = tuple([] for i in range(0, NSCORES))
         for c in codes:
-            s = score.score(c, rootcode)
+            s = lookup[c]
             p[s].append(c)
 
         self.parts = p
