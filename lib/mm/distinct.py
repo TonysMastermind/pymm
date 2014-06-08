@@ -67,7 +67,6 @@ class PrefixGen(object):
         if len(xfset) == 1 and self.xftbl.IDENTITY in xfset:
             return codeset - frozenset(exclusions)
 
-
         return frozenset(min(w
                              for w in (self.xftbl.apply(t, v) for t in xfset)
                              if w in codeset)
