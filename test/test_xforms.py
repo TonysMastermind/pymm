@@ -4,14 +4,27 @@ from mm import *
 import mm.xforms as xforms
 
 class IdentityTestTestCase(ut.TestCase):
-    def runTest(self):
+    def setUp(self):
+        xforms.initialize()
+
+    def testXFTable(self):
         t = xforms.TransformTable.IDENTITY
         xftbl = xforms.TransformTable()
         for c in CODETABLE.CODES:
             self.assertEqual(xftbl.apply(t, c), c)
 
+
+    def testXFLookupTable(self):
+        t = xforms.TransformLookupTable.IDENTITY
+        xftbl = xforms.TransformLookupTable()
+        for c in CODETABLE.ALL:
+            self.assertEqual(xftbl.apply(t, c), c)
+
 class ReversePPTestCase(ut.TestCase):
-    def runTest(self):
+    def setUp(self):
+        xforms.initialize()
+
+    def testXFTable(self):
         rev = -1
         xftbl = xforms.TransformTable()
         revperm = tuple(reversed(xrange(CODETABLE.NPOSITIONS)))
@@ -25,7 +38,11 @@ class ReversePPTestCase(ut.TestCase):
             r = xftbl.apply(t, c)
             self.assertEqual(tuple(reversed(c)), r)
 
+
 class InvariantAfterTestCase(ut.TestCase):
+    def setUp(self):
+        xforms.initialize()
+
     def runTest(self):
         xftbl = xforms.TransformTable()
         inv = xftbl.preserving([])
@@ -50,6 +67,9 @@ class InvariantAfterTestCase(ut.TestCase):
         self.assertNotEqual(inv, i1)
 
 class ReprTestCase(ut.TestCase):
+    def setUp(self):
+        xforms.initialize()
+
     def runTest(self):
         i = xforms.Transform(cp=1, pp=0)
         s = str(i)

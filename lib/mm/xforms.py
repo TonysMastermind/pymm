@@ -4,18 +4,24 @@ Described in the paper by Koyama and Lai.
 See :doc:`Case Equivalence <../casequiv>`
 """
 
+from . import *
+from . import loader as loader
+from . import singleton as singleton
+
 import collections
 import itertools
 import math
 
-from . import *
-from . import singleton as singleton
+
 
 EMPTY_TUPLE  = tuple()
 """Empty tuple."""
 
 EMPTY_SET  = frozenset()
 """Empty tuple."""
+
+VERSION = 1
+STORAGE_PATH = 'var/xftable'
 
 def permutations(v):
     """Yields all permutation of the input tuple ``v``.
@@ -93,6 +99,9 @@ class TransformTable(singleton.SingletonBehavior):
     CODESET = frozenset(CODETABLE.CODES)
     """All codes, in vector form, as a set."""
 
+    ALL = None
+    """All transformations."""
+
     def __init__(self):
         """Initialize contents."""
 
@@ -102,20 +111,11 @@ class TransformTable(singleton.SingletonBehavior):
         self.colorperms = tuple(c for c in permutations(self.COLORS))
         """All color permutations."""
 
-        self._ALL = None
+        self.ALL = frozenset(Transform(pp=pp, cp=cp)
+                             for pp in xrange(self.NPOSPERMS)
+                             for cp in xrange(self.NCOLORPERMS))
 
-
-    @property
-    def ALL(self):
-        """Set of all possible transformations.
-
-        :return: :py:class:`frozenset` of :py:class:`.Transform`
-        """
-        if not self._ALL:
-            self._ALL = frozenset(Transform(pp=pp, cp=cp)
-                                  for pp in xrange(self.NPOSPERMS)
-                                  for cp in xrange(self.NCOLORPERMS))
-        return self._ALL
+        TransformTable.ALL = self.ALL
 
 
     def apply(self, xform, v):
@@ -186,4 +186,122 @@ class TransformTable(singleton.SingletonBehavior):
                 return inv
 
         return inv
+
+
+class TransformLookupTable(singleton.SingletonBehavior):
+    """Transformation table with all transformatons, a singleton, using numeric
+    codes."""
+
+    __metaclass__ = singleton.Singleton
+
+
+    COLORS = tuple(range(CODETABLE.NCOLORS))
+    """A tuple enumerating the colors"""
+
+    POSITIONS = tuple(range(CODETABLE.NPOSITIONS))
+    """A tuple enumerating the positions"""
+
+    NPOSPERMS = math.factorial(CODETABLE.NPOSITIONS)
+    """Count of possible position permutations."""
+
+    NCOLORPERMS = math.factorial(CODETABLE.NCOLORS)
+    """Count of possible color permutations."""
+
+    IDENTITY = Transform(cp=0, pp=0)
+    """The identity transformation."""
+
+
+    CODESET = frozenset(CODETABLE.ALL)
+    """All codes, in numeric form, as a set."""
+
+
+    POS_LOOKUP_TABLE = None
+    """Position permutation lookup table; use as ``POS_LOOKUP_TABLE[code][permindex]``."""
+
+
+    COLOR_LOOKUP_TABLE = None
+    """Color permutation lookup table; use as ``COLOR_LOOKUP_TABLE[code][permindex]``."""
+
+
+    ALL = None
+    """All transformations."""
+
+    def __init__(self):
+        self.xftbl = TransformTable()
+
+        TransformLookupTable.POS_LOOKUP_TABLE = tuple(
+            tuple(CODETABLE.encode(self.xftbl.apply_pp(i, CODETABLE.CODES[c]))
+                  for i in xrange(self.NPOSPERMS))
+            for c in CODETABLE.ALL)
+
+        TransformLookupTable.COLOR_LOOKUP_TABLE = tuple(
+            tuple(CODETABLE.encode(self.xftbl.apply_cp(i, CODETABLE.CODES[c]))
+                  for i in xrange(self.NCOLORPERMS))
+            for c in CODETABLE.ALL)
+
+        TransformLookupTable.ALL = self.xftbl.ALL
+
+        self.POS_LOOKUP_TABLE = TransformLookupTable.POS_LOOKUP_TABLE
+        self.COLOR_LOOKUP_TABLE = TransformLookupTable.COLOR_LOOKUP_TABLE
+        self.ALL = TransformLookupTable.ALL
+
+
+    def apply(self, t, c):
+        """Applies the information to the numeric code.
+
+        :param t: a transformation.
+        :type t: :py:class:`.Transform`
+        :param c: mastermind code in numeric form.
+        :return: a number representing the transformed code.
+        """
+        return self.POS_LOOKUP_TABLE[self.COLOR_LOOKUP_TABLE[c][t.cp]][t.pp]
+
+    def preserving(self, prefix, seed=None):
+        """Transformations that do not vary a mastermind code.
+
+        Recommend for use with the initial code in a solution, 
+        then using the result to find case-distinct followers
+        with increasing length prefixes.
+
+        :param prefix: mastermind code prefix, in encoded form.
+        :type c: iterable of int
+        :param seed: initial set of transforms to start with; defaults to
+          :py:attr:`.TransformTable.ALL` when input is ``None``.
+        :type seed: iterable of :py:class:`.Transform`.
+        :return: a set of :py:class:`.Transform` objects that do
+          not change any element of ``prefix``.
+        """
+        inv = seed
+        if inv is None:
+            inv = self.ALL
+
+        minlen = 0
+        if self.IDENTITY in inv:
+            minlen = 1
+
+        for c in prefix:
+            inv = frozenset(t for t in inv if self.apply(t, c) == c)
+            if len(inv) <= minlen:
+                return inv
+
+        return inv
+
+
+XF_LOOKUP_TABLE = None
+"""Transformation lookup table; lookup tables for transformations."""
+
+def initialize():
+    """Initialize global tables."""
+
+    global XF_LOOKUP_TABLE
+
+    if XF_LOOKUP_TABLE is not None:
+        return
+
+    spec = loader.StorageSpec(VERSION, STORAGE_PATH)
+    ldr = loader.Loader(TransformLookupTable, spec)
+
+    tbl = ldr.get()
+
+    XF_LOOKUP_TABLE = tbl
 

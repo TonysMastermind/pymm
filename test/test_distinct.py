@@ -18,8 +18,7 @@ class IdentityTestTestCase(ut.TestCase):
         inv = pgen.xftbl.preserving((8,))
         expected = set()
         for v in pgen.xftbl.CODESET:
-            c = min(map(lambda v: CODETABLE.encode(v), 
-                        map(lambda xf: pgen.xftbl.apply(xf, v), inv)))
+            c = min(map(lambda xf: pgen.xftbl.apply(xf, v), inv))
             expected.add(c)
         expected -= set((8,))
         expected = frozenset(expected)
@@ -37,8 +36,7 @@ class IdentityTestTestCase(ut.TestCase):
         inv = pgen.xftbl.preserving((8,))
         expected = set()
         for v in pgen.xftbl.CODESET:
-            c = min(map(lambda v: CODETABLE.encode(v), 
-                        map(lambda xf: pgen.xftbl.apply(xf, v), inv)))
+            c = min(map(lambda xf: pgen.xftbl.apply(xf, v), inv))
             expected.add(c)
         expected -= set((8,))
         expected = frozenset(expected)

@@ -9,7 +9,7 @@ class PrefixGen(object):
     """Pefix geneator."""
 
     def __init__(self):
-        self.xftbl = xforms.TransformTable()
+        self.xftbl = xforms.TransformLookupTable()
         """Transformation table."""
 
         self.seed = self.xftbl.ALL
@@ -43,8 +43,8 @@ class PrefixGen(object):
             return frozenset(codeset) - frozenset(exclusions)
         if len(xfset) == 1 and self.xftbl.IDENTITY in xfset:
             return frozenset(codeset) - frozenset(exclusions)
-        return frozenset(min(CODETABLE.encode(self.xftbl.apply(t, v)) for t in xfset)
-                         for v in self._vset(codeset)) - frozenset(exclusions)
+        return frozenset(min(self.xftbl.apply(t, v) for t in xfset)
+                         for v in codeset) - frozenset(exclusions)
 
     def reduce_codeset(self, xfset, codeset, exclusions):
         """Reduced subset of a set of codes under a set of transformations.
@@ -60,16 +60,18 @@ class PrefixGen(object):
         This method may throw an exception if the result is empty.  Including the
         identity transformation in *xfset* will prevent such events.
         """
-        if not xfset:
-            return frozenset(codeset) - frozenset(exclusions)
-        if len(xfset) == 1 and self.xftbl.IDENTITY in xfset:
-            return frozenset(codeset) - frozenset(exclusions)
-        vset = self._vset(codeset)
+        codeset = frozenset(codeset)
 
-        return frozenset(min(CODETABLE.encode(w) 
+        if not xfset:
+            return codeset - frozenset(exclusions)
+        if len(xfset) == 1 and self.xftbl.IDENTITY in xfset:
+            return codeset - frozenset(exclusions)
+
+
+        return frozenset(min(w
                              for w in (self.xftbl.apply(t, v) for t in xfset)
-                             if w in vset)
-                         for v in vset) - frozenset(exclusions)
+                             if w in codeset)
+                         for v in codeset) - frozenset(exclusions)
 
 
     def _distinct(self, xfset, exclusions):
@@ -99,8 +101,6 @@ class PrefixGen(object):
 
         return self._distinct(xfset, pfx)
 
-    def _vset(self, pfx):
-        return frozenset(CODETABLE.CODES[c] for c in pfx)
 
     def _prefixes(self, p, invp, maxlen, d=None):
         if d is None:
