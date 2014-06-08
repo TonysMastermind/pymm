@@ -36,7 +36,8 @@ class PrefixGen(object):
         :param codeset: a set of codes, in numeric form.
         :param exclusions: a set of codes, in numeric form, to exclude from the results.
         :return: a subset of *codeset* representing the codes that are distinct
-          under the proposet set of equivalence transformations *xfset*.
+          under the proposet set of equivalence transformations *xfset*.  Not that the
+          output codes are not guaranteed to be in the input set.
         """
         if not xfset:
             return frozenset(codeset) - frozenset(exclusions)
@@ -44,6 +45,32 @@ class PrefixGen(object):
             return frozenset(codeset) - frozenset(exclusions)
         return frozenset(min(CODETABLE.encode(self.xftbl.apply(t, v)) for t in xfset)
                          for v in self._vset(codeset)) - frozenset(exclusions)
+
+    def reduce_codeset(self, xfset, codeset, exclusions):
+        """Reduced subset of a set of codes under a set of transformations.
+
+        :param xfset: a set of transformations; instances of :py:class:`.xforms.Transfrom`.
+        :param codeset: a set of codes, in numeric form.
+        :param exclusions: a set of codes, in numeric form, to exclude from the results.
+        :return: a subset of *codeset* representing the codes that are distinct
+          under the proposet set of equivalence transformations *xfset*.  Unlike the
+          method :py:meth:`.PrefixGen.distinct_subset`, this method will ensure that
+          the output results are in the input codeset, using costlier calculations.
+
+        This method may throw an exception if the result is empty.  Including the
+        identity transformation in *xfset* will prevent such events.
+        """
+        if not xfset:
+            return frozenset(codeset) - frozenset(exclusions)
+        if len(xfset) == 1 and self.xftbl.IDENTITY in xfset:
+            return frozenset(codeset) - frozenset(exclusions)
+        vset = self._vset(codeset)
+
+        return frozenset(min(CODETABLE.encode(w) 
+                             for w in (self.xftbl.apply(t, v) for t in xfset)
+                             if w in vset)
+                         for v in vset) - frozenset(exclusions)
+
 
     def _distinct(self, xfset, exclusions):
         return self.distinct_subset(xfset, CODETABLE.ALL, exclusions)

@@ -43,7 +43,20 @@ class Ctx(TreeWalkerContext):
             self.preserving = XFTBL.preserving(self.prefix, XFTBL.ALL)
 
         self.distinct_followers = PFXGEN.distinct_subset(self.preserving, CODETABLE.ALL, self.prefix)
-        self.distinct_followers_in_problem = PFXGEN.distinct_subset(self.preserving, self.problem, self.prefix)
+        self.distinct_followers_in_problem = PFXGEN.distinct_subset(self.preserving, self.problem,
+                                                                    self.prefix)
+        self.reduced_followers = PFXGEN.reduce_codeset(self.preserving, self.problem, self.prefix)
+
+        fp = frozenset(self.problem)
+        if self.distinct_followers_in_problem != self.reduced_followers:
+            print >>sys.stderr, "Different reductions at {}; {} {}".format(
+                self.prefix, 
+                len(self.problem),
+                len(self.reduced_followers & fp))
+
+        if len(self.reduced_followers & fp) != len(self.reduced_followers):
+            print >>sys.stderr, "Reduced dropped some items at {}.".format(prefix)
+
 
 def pad(s, c):
     delta = max(0, c[1] - len(s))
