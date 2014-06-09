@@ -51,7 +51,7 @@ class TreeResult(descr.WithDescription):
         :param fname: name, or path, of output file.
         """
         fp = open(fname, 'w')
-        json.dump(self.as_dict(), fp, skipkeys=True, 
+        json.dump(self.as_dict(), fp, skipkeys=True, sort_keys=True,
                   check_circular=True, indent=2)
 
     def as_json_string(self):
@@ -59,7 +59,7 @@ class TreeResult(descr.WithDescription):
 
         :return: JSON string representation.
         """
-        return json.dumps(self.as_dict(), skipkeys=True, 
+        return json.dumps(self.as_dict(), skipkeys=True, sort_keys=True,
                           check_circular=True, indent=2)
 
     def as_dict(self):
@@ -201,7 +201,7 @@ class Tree(object):
 
         :return: JSON string representation.
         """
-        return json.dumps(self.as_dict(), skipkeys=True, 
+        return json.dumps(self.as_dict(), skipkeys=True, sort_keys=True,
                           check_circular=True, indent=2)
 
 

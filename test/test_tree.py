@@ -13,7 +13,7 @@ class TreeTestCase(ut.TestCase):
         self.verifyTree(t.tree, 10, CODETABLE.ALL)
 
         d = t.as_dict()
-        js = json.dumps(d, skipkeys=True, check_circular=True, indent=2)
+        js = json.dumps(d, skipkeys=True, check_circular=True, indent=2, sort_keys=True)
         ts = t.as_json_string()
 
         t.to_json_file('/dev/null')
@@ -21,7 +21,7 @@ class TreeTestCase(ut.TestCase):
         self.assertEqual(js, ts)
 
         t = t.tree
-        js = json.dumps(t.as_dict(), skipkeys=True, check_circular=True, indent=2)
+        js = json.dumps(t.as_dict(), skipkeys=True, check_circular=True, indent=2, sort_keys=True)
         ts = t.as_json_string()
 
         s = str(t.stats)
