@@ -260,6 +260,13 @@ class TreeBuilder(descr.WithDescription):
         self.root_problem = problem
 
 
+    def description_qualifiers(self):
+        return {
+            'strategy': self.strategy.description(),
+            'problem_size': len(self.root_problem)
+            }
+
+
     def build(self, maxdepth, root=None):
         """Build a tree.
 
@@ -273,6 +280,8 @@ class TreeBuilder(descr.WithDescription):
 
         ctx = self.strategy(self.root_problem, None, candidates)
         (u, t) = usage.time(lambda: self._solve(ctx, maxdepth))
+        if t:
+            t.stats.set_timing(u)
         return tree.TreeResult(t, maxdepth, self.strategy, u)
 
 

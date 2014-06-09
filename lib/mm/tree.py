@@ -137,7 +137,7 @@ class Tree(object):
                         self.min_depth,
                         self.total_moves,
                         self.max_depth,
-                        self.avg_game_length,
+                        self.average_game_length,
                         (self.optimal if hasattr(self, 'optimal') \
                              else 'n/a'),
                         (self.in_solution if hasattr(self, 'in_solution') \
