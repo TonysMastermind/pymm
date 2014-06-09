@@ -178,7 +178,6 @@ class Tree(object):
         d['in_solution'] = self.root_in_solution
         d['problem_size'] = self.stats.problem_size
         d['stats'] = self.stats.as_dict()
-        d['pr_stats'] = self.pr_stats.as_dict()
         children = filter(lambda p: p[1], zip(_SCORE_LIST, self.children))
         if len(children) == 0:
             return d
