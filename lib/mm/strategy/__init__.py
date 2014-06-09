@@ -96,7 +96,7 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
     @staticmethod
     def compare(a, b):
         """Defines an ordering on partition results, with *a < b* equivalent to 
-        *a is bettern than b*.
+        *a is better than b*.
 
         This implementation raises an exception, requiring specialization with
         real implementations.
@@ -105,7 +105,7 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
         :type a: :py:class:`..partition.PartitionResult`
         :param b: another partition result of the same problem.
         :type b: :py:class:`..partition.PartitionResult`
-        :returns: a negative number if *a is better than b*, a positive number if *b is bettern than a*,
+        :returns: a negative number if *a is better than b*, a positive number if *b is better than a*,
           zero otherwise.
         """
         raise MMException("Not implemented.")
