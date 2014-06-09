@@ -247,6 +247,11 @@ class BuilderContext(object):
     def description(clazz):
         return descr.base_description(clazz)
 
+    @classmethod
+    def build_tree(clazz, problem, maxdepth, root=None):
+        return TreeBuilder(clazz, problem).build(maxdepth, root=root)
+
+
 
 class TreeBuilder(descr.WithDescription):
     """Tree builder framework."""
