@@ -116,7 +116,7 @@ BuilderStep = namedtuple('BuilderStep', ['root', 'score', 'origin'])
 :param score: a score resulting from guessing *root* against the origin's problem.
 """
 
-class BuilderContext(object):
+class BuilderContext(descr.WithDescription):
     """Tree construction context."""
 
     SOLUTION_EVALUATOR = SolutionEvaluator
@@ -230,7 +230,7 @@ class BuilderContext(object):
         This method can be specialized to provide more interesting evaluation algorithms.
         """
         return self.SOLUTION_EVALUATOR()
-    
+
 
     def possible(self, remaining):
         """:return: false if the problem cannot be solved with the given number of guesses.
@@ -242,6 +242,7 @@ class BuilderContext(object):
         into subproblems of size 1 with the given budget of moves.
         """
         return self.problem_size <= size_limit(remaining)
+
 
     @classmethod
     def description(clazz):
@@ -287,7 +288,9 @@ class TreeBuilder(descr.WithDescription):
         (u, t) = usage.time(lambda: self._solve(ctx, maxdepth))
         if t:
             t.stats.set_timing(u)
-        return tree.TreeResult(t, maxdepth, self.strategy, u)
+
+        t = tree.TreeResult(t, maxdepth, self.strategy, u, root)
+        return t
 
 
     def _solve(self, ctx, remaining):

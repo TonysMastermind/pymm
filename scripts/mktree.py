@@ -34,7 +34,7 @@ def parser():
     p.add_argument('--root', '-r', type=int,
                    help='Initial guess',
                    action='store', dest='root',
-                   default=8)
+                   default=None)
 
     p.add_argument('--output', '-o',
                    help='Output file (json format); default to stdout.',
@@ -72,8 +72,9 @@ def main():
         print >>sys.stderr, "Tree height constraint must be a positive integer."
         sys.exit(1)
 
-    if args.root not in CODETABLE.ALL_SET:
-        print >>sys.stderr, "Initial guess must be in the range [{}, {}]; input: {}".format(0, CODETABLE.NCODES-1, args.root)
+    if args.root is not None and args.root not in CODETABLE.ALL_SET:
+        print >>sys.stderr, "Initial guess must be in the range [{}, {}]; input: {}".format(
+            0, CODETABLE.NCODES-1, args.root)
         sys.exit(1)
 
     initialize()

@@ -2,13 +2,14 @@
 
 from . import *
 from . import score
+from . import descr
 
 import json
 import platform
 
 _SCORE_LIST = range(CODETABLE.NSCORES)
 
-class TreeResult(object):
+class TreeResult(descr.WithDescription):
     """The result of calculating a game tree.  Non-null entity encapsulating
     the result of calculation, the strategy used during generating, and
     some metrics about the cost of calculation.
@@ -16,7 +17,7 @@ class TreeResult(object):
     The game tree, itself, may be null.
     """
 
-    def __init__(self, tree, max_levels, strategy, rusage):
+    def __init__(self, tree, max_levels, strategy, rusage, root=None):
         """
         :param tree: game tree, may be null.
         :param max_levels: depth constraint on the contsruction.
@@ -36,6 +37,13 @@ class TreeResult(object):
         self.rusage = rusage
         """Time resource used during tree construction."""
 
+        self.initial_guess = root
+        """Pre-defined initial guess, when not null."""
+
+    def description_qualifiers(self):
+        return {
+            'initial_guess': self.initial_guess
+            }
 
     def to_json_file(self, fname):
         """Writes a JSON representation of the tree to a file.
@@ -66,8 +74,10 @@ class TreeResult(object):
                 'python': platform.python_implementation()
                 },
             'strategy': self.strategy.description(),
-            'max_levels': self.max_levels
+            'max_levels': self.max_levels,
+            'initial_guess': self.initial_guess
             }
+
 
 class Tree(object):
     """MasterMind strategy tree."""

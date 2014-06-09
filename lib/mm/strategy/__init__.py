@@ -64,14 +64,21 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
     SOLUTION_EVALUATOR = MinimizeMoveCount
     """Tree evaluator class."""
 
+    restrict_to_problem = False
+    """When true, candidate comupation is restricted to the problem; otherwise
+    the selection examines all possible codes."""
+
+
     def __init__(self, problem, step, candidates=None):
         """:param problem: problem under analysis.
         :param step: from parent problem to this problem.
         :param candidates: pre-selected candidates.
         """
         super(OptimizePartitionResultProperty, self).__init__(problem, step, candidates=candidates)
+
         self._answer = None
         self._prefix_set = frozenset(self.prefix)
+
 
 
     def compute_candidates(self):
@@ -118,6 +125,9 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
                 best = pr
                 return (best,)
 
+        if self.restrict_to_problem:
+            return (best,)
+
         for c in (CODETABLE.ALL_SET - frozenset(self.problem)) - self._prefix_set:
             pr = partition.PartitionResult(self.problem, c)
             if self.compare(pr, best) < 0:
@@ -154,9 +164,24 @@ class MaximizePartitionCount(OptimizePartitionResultProperty):
             cmp(a.root, b.root)
 
 
+class MinimizeLargestPartitionInProblem(MinimizeLargestPartition):
+    """A specialization of :py:class:`.MinimizeLargestPartition` restricting
+    candidate choices to the problem.
+    """
+    restrict_to_problem = True
+
+class MaximizePartitionCountInProblem(MaximizePartitionCount):
+    """A specialization of :py:class:`.MaximizePartitionCount` restricting
+    candidate choices to the problem.
+    """
+    restrict_to_problem = True
+
+
 STRATEGIES = {
     'random': builder.BuilderContext,
     'min_largest': MinimizeLargestPartition,
     'max_parts': MaximizePartitionCount,
+    'min_largest_in': MinimizeLargestPartitionInProblem,
+    'max_parts_in': MaximizePartitionCountInProblem,
 }
 """Maps symbolic names to strategy classes."""
