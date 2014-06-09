@@ -83,7 +83,7 @@ def main():
     if args.output:
         t.to_json_file(args.output)
     else:
-        print t.to_json_string()
+        print t.as_json_string()
 
 
 if __name__ == '__main__':

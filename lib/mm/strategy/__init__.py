@@ -5,6 +5,12 @@ from .. import builder as builder
 from .. import partition as partition
 
 class MinimizeMoveCount(builder.SolutionEvaluator):
+    """A tree evaluator, picks the tree with the fewest moves.  When there's
+    a tie, the evaluator favors lower depth.
+
+    The evaluator recognizes optimal trees, and favors them over other trees.
+    """
+
     def initial_state(self):
         """:return: initial evaluator state.
 
@@ -15,6 +21,7 @@ class MinimizeMoveCount(builder.SolutionEvaluator):
         - optimal tree with root chosen inside the problem.
         """
         return [None, None, None]
+
 
     def evaluate(self, ctx, tree, state):
         """:param ctx: ignored.
@@ -39,39 +46,62 @@ class MinimizeMoveCount(builder.SolutionEvaluator):
 
         return state[2] is not None
 
+
     def best(self, state):
         """:param state: evaluation state.
         :return: the best solution evaluated with *state*.
-
-        Optimal trees are always favored.
         """
         return state[2] or state[1] or state[0]
 
 
-def _minimize_largest(a, b):
-    return \
-        cmp(a.stats.largest, b.stats.largest) or \
-        cmp(b.stats.n, a.stats.n) or \
-        cmp(a.root, b.root)
+class OptimizePartitionResultProperty(builder.BuilderContext):
+    """General purpose property optimizer for :py:class:`..partition.PartitionResult`
+    
+    The method :py:meth:`.OptimizePartitionResultProperty.compare` is the
+    primary point of specialization.
+    """
 
-class MinimizeLargestPartition(builder.BuilderContext):
     SOLUTION_EVALUATOR = MinimizeMoveCount
+    """Tree evaluator class."""
 
     def __init__(self, problem, step, candidates=None):
-        super(MinimizeLargestPartition, self).__init__(problem, step, candidates=candidates)
-        self.answer = None
-        self.prefix_set = frozenset(self.prefix)
+        """:param problem: problem under analysis.
+        :param step: from parent problem to this problem.
+        :param candidates: pre-selected candidates.
+        """
+        super(OptimizePartitionResultProperty, self).__init__(problem, step, candidates=candidates)
+        self._answer = None
+        self._prefix_set = frozenset(self.prefix)
 
 
     def compute_candidates(self):
-        """Returns the root that mimimizes the largest subproblem.
+        """Returns the root that optimizes the partition result property defined by the *compare*
+        method.
 
-        :return: an iterable of :py:class:`.PartitionResult` instances.
+        :return: an iterable of :py:class:`..partition.PartitionResult` instances.
         """
-        if not self.answer:
-            self.answer = self._best_candidate()
+        if not self._answer:
+            self._answer = self._best_candidate()
 
-        return self.answer
+        return self._answer
+
+
+    @staticmethod
+    def compare(a, b):
+        """Defines an ordering on partition results, with *a < b* equivalent to 
+        *a is bettern than b*.
+
+        This implementation raises an exception, requiring specialization with
+        real implementations.
+
+        :param a: a partition result of the problem.
+        :type a: :py:class:`..partition.PartitionResult`
+        :param b: another partition result of the same problem.
+        :type b: :py:class:`..partition.PartitionResult`
+        :returns: a negative number if *a is better than b*, a positive number if *b is bettern than a*,
+          zero otherwise.
+        """
+        raise MMException("Not implemented.")
 
 
     def _best_candidate(self):
@@ -81,16 +111,16 @@ class MinimizeLargestPartition(builder.BuilderContext):
         best = partition.PartitionResult(self.problem, self.problem[0])
         for c in self.problem[1:]:
             pr = partition.PartitionResult(self.problem, c)
-            if _minimize_largest(pr, best) < 0:
+            if self.compare(pr, best) < 0:
                 best = pr
 
             if pr.stats.optimal:
                 best = pr
                 return (best,)
 
-        for c in (CODETABLE.ALL_SET - frozenset(self.problem)) - self.prefix_set:
+        for c in (CODETABLE.ALL_SET - frozenset(self.problem)) - self._prefix_set:
             pr = partition.PartitionResult(self.problem, c)
-            if _minimize_largest(pr, best) < 0:
+            if self.compare(pr, best) < 0:
                 best = pr
 
             if pr.stats.optimal:
@@ -100,7 +130,33 @@ class MinimizeLargestPartition(builder.BuilderContext):
         return (best,)
 
 
+class MinimizeLargestPartition(OptimizePartitionResultProperty):
+    """Policy to minimize largest partition size.  When partition sizes are
+    tied, partition count optimization is used.
+    """
+    @staticmethod
+    def compare(a, b):
+        return \
+            cmp(a.stats.largest, b.stats.largest) or \
+            cmp(b.stats.n, a.stats.n) or \
+            cmp(a.root, b.root)
+
+
+class MaximizePartitionCount(OptimizePartitionResultProperty):
+    """Policy to maximize partition count size.  When partition counts are tied,
+    largest partition size optimization is used.
+    """
+    @staticmethod
+    def compare(a, b):
+        return \
+            cmp(b.stats.n, a.stats.n) or \
+            cmp(a.stats.largest, b.stats.largest) or \
+            cmp(a.root, b.root)
+
+
 STRATEGIES = {
     'random': builder.BuilderContext,
     'min_largest': MinimizeLargestPartition,
+    'max_parts': MaximizePartitionCount,
 }
+"""Maps symbolic names to strategy classes."""

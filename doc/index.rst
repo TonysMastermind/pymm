@@ -36,6 +36,7 @@ Code documentation
    mm.partition
    mm.score
    mm.singleton
+   mm.strategy
    mm.tree
    mm.treewalk
    mm.usage
