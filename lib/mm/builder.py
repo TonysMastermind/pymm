@@ -6,6 +6,7 @@ from . import descr
 from . import score
 from . import tree
 from . import usage
+from . import xforms
 
 from partition import PartitionResult
 
@@ -136,6 +137,7 @@ class BuilderContext(object):
         """
 
         score.initialize()
+        xforms.initialize()
 
         self.candidates = candidates
         """Preselected initial guess candidats."""

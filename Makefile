@@ -8,7 +8,10 @@ build:
 doc:
 	$(PYTHON) ./setup.py build_sphinx
 
+runtest:
+	PYTHONPATH=$(PWD)/lib:$(PYTHONPATH) $(PYTHON) $(TESTS)
+
 test: build
-	$(PYTHON) ./setup.py nosetests $(NOSE_ARGS)
+	$(PYTHON) ./setup.py nosetests
 
 .PHONY: build test doc

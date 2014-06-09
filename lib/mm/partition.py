@@ -71,7 +71,7 @@ class Stats(object):
         self.smallest = mn
         """size of largest partition."""
 
-        self.optimal = (mx == 1) and (total > 2)
+        self.optimal = (mx == 1)
         """True when the partitionning result is optimal."""
 
         self.in_solution = (perfect != 0)

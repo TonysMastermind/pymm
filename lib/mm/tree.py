@@ -127,7 +127,7 @@ class Tree(object):
 
         def __str__(self):
             """Printable (informal) string format."""
-            b = super(tree.stats, self).__str__()
+            b = super(Tree.Stats, self).__str__()
             d = ("---------------------------------------\n" +
                  "   problem_size:{:7d}; min_depth:{:4d}\n" +
                  "    total_moves:{:7d}; max_depth:{:4d}\n" +
