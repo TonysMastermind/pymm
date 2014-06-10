@@ -1,5 +1,6 @@
 from mm import *
 from mm.strategy import STRATEGIES
+import mm.strategy.all
 
 import mm.score as score
 import mm.xforms as xforms

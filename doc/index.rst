@@ -37,6 +37,8 @@ Code documentation
    mm.score
    mm.singleton
    mm.strategy
+   mm.strategy.all
+   mm.strategy.advanced
    mm.tree
    mm.treewalk
    mm.usage

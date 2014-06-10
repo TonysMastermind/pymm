@@ -53,6 +53,55 @@ class MinimizeMoveCount(builder.SolutionEvaluator):
         """
         return state[2] or state[1] or state[0]
 
+class MinimizeTreeDepth(builder.SolutionEvaluator):
+    """A tree evaluator, picks the shallowest tree.  When there's a tie, the
+    evaluator favors lower depth.
+
+    The evaluator recognizes optimal trees, and favors them over other trees.
+    """
+
+    def initial_state(self):
+        """:return: initial evaluator state.
+
+        The state is 3-parts:
+
+        - best tree based on total moves, with depth as a tie-breaker.
+        - optimal tree with root chosen outside the problem.
+        - optimal tree with root chosen inside the problem.
+        """
+        return [None, None, None]
+
+
+    def evaluate(self, ctx, tree, state):
+        """:param ctx: ignored.
+        :param tree: tree to be evaluated.
+        :param state: cumulative state of evaluation.
+        :return: False, unless an optimal tree with the root chosen from the
+          problem was seen.
+        """
+        if tree.stats.optimal:
+            if tree.root_in_solution:
+                state[2] = tree
+            else:
+                state[1] = tree
+
+        if not state[0]:
+            state[0] = tree
+        elif state[0].stats.max_depth < tree.stats.max_depth:
+            stats[0] = tree
+        elif state[0].stats.max_depth == tree.stats.max_depth:
+            if state[0].stats.total_moves > tree.stats.total_moves:
+                state[0] = tree
+
+        return state[2] is not None
+
+
+    def best(self, state):
+        """:param state: evaluation state.
+        :return: the best solution evaluated with *state*.
+        """
+        return state[2] or state[1] or state[0]
+
 
 class OptimizePartitionResultProperty(builder.BuilderContext):
     """General purpose property optimizer for :py:class:`..partition.PartitionResult`

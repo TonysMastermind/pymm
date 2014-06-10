@@ -14,4 +14,7 @@ runtest:
 test: build
 	$(PYTHON) ./setup.py nosetests
 
+clean:
+	$(PYTHON) ./setup.py clean
+
 .PHONY: build test doc
