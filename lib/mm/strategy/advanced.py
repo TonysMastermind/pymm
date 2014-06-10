@@ -122,7 +122,20 @@ class MinimizeMoveCountUsingDistinct(ScanDistinctFollowers):
     restrict_to_problem = False
     SOLUTION_EVALUATOR = MinimizeMoveCount
 
+
+class MinimizeDepthUsingDistinctInProblem(ScanDistinctFollowers):
+    restrict_to_problem = True
+    SOLUTION_EVALUATOR = MinimizeTreeDepth
+
+
+class MinimizeDepthUsingDistinct(ScanDistinctFollowers):
+    restrict_to_problem = False
+    SOLUTION_EVALUATOR = MinimizeTreeDepth
+
+
 STRATEGIES.update({
         'min_moves_distinct_in': MinimizeMoveCountUsingDistinctInProblem,
-        'min_moves_distinct':  MinimizeMoveCountUsingDistinct
+        'min_moves_distinct':  MinimizeMoveCountUsingDistinct,
+        'min_depth_distinct_in': MinimizeDepthUsingDistinctInProblem,
+        'min_depth_distinct': MinimizeDepthUsingDistinct,
         })
