@@ -124,5 +124,5 @@ class MinimizeMoveCountUsingDistinct(ScanDistinctFollowers):
 
 STRATEGIES.update({
         'min_moves_distinct_in': MinimizeMoveCountUsingDistinctInProblem,
-        'min_moves_distint':  MinimizeMoveCountUsingDistinct
+        'min_moves_distinct':  MinimizeMoveCountUsingDistinct
         })
