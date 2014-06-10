@@ -45,7 +45,10 @@ class ScanDistinctFollowers(builder.BuilderContext):
         self._set_preserving()
 
         if len(self._preserving) == 1:
-            self._distinct_candidates = self._problem_set - self._prefix_set
+            if self.restrict_to_problem:
+                self._distinct_candidates = tuple(self._problem_set - self._prefix_set)
+            else:
+                self._distinct_candidates = tuple(self._root_problem - self._prefix_set)
             return
 
         if not self.parent:

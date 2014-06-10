@@ -106,6 +106,10 @@ class MinimizeTreeDepth(builder.SolutionEvaluator):
         return state[2] or state[1] or state[0]
 
 
+def _not_implemented():
+    raise MMException("Not implemented.")
+
+
 class OptimizePartitionResultProperty(builder.BuilderContext):
     """General purpose property optimizer for :py:class:`..partition.PartitionResult`
     
@@ -132,7 +136,6 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
         self._prefix_set = frozenset(self.prefix)
 
 
-
     def compute_candidates(self):
         """Returns the root that optimizes the partition result property defined by the *compare*
         method.
@@ -145,8 +148,10 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
         return self._answer
 
 
-    @staticmethod
-    def compare(a, b):
+    _comparator_sequence = [lambda a, b: _not_implemented()]
+
+
+    def compare(self, a, b):
         """Defines an ordering on partition results, with *a < b* equivalent to 
         *a is better than b*.
 
@@ -160,8 +165,12 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
         :returns: a negative number if *a is better than b*, a positive number if *b is better than a*,
           zero otherwise.
         """
-        raise MMException("Not implemented.")
+        for f in self._comparator_sequence:
+            r = f(a, b)
+            if r:
+                return r
 
+        return 0
 
     def _best_candidate(self):
         if self.problem_size <= 2:
@@ -196,24 +205,53 @@ class MinimizeLargestPartition(OptimizePartitionResultProperty):
     """Policy to minimize largest partition size.  When partition sizes are
     tied, partition count optimization is used.
     """
-    @staticmethod
-    def compare(a, b):
-        return \
-            cmp(a.stats.largest, b.stats.largest) or \
-            cmp(b.stats.n, a.stats.n) or \
-            cmp(a.root, b.root)
+
+    _comparator_sequence = [
+        lambda a, b: cmp(a.stats.largest, b.stats.largest),
+        lambda a, b: cmp(b.stats.n, a.stats.n),
+        lambda a, b: cmp(b.stats.in_solution, a.stats.in_solution),
+        lambda a, b: cmp(a.root, b.root)
+        ]
 
 
 class MaximizePartitionCount(OptimizePartitionResultProperty):
     """Policy to maximize partition count size.  When partition counts are tied,
     largest partition size optimization is used.
     """
-    @staticmethod
-    def compare(a, b):
-        return \
-            cmp(b.stats.n, a.stats.n) or \
-            cmp(a.stats.largest, b.stats.largest) or \
-            cmp(a.root, b.root)
+
+    _comparator_sequence = [
+        lambda a, b: cmp(b.stats.n, a.stats.n),
+        lambda a, b: cmp(a.stats.largest, b.stats.largest),
+        lambda a, b: cmp(b.stats.in_solution, a.stats.in_solution),
+        lambda a, b: cmp(a.root, b.root)
+        ]
+
+
+
+class MinimizeLargestPartition01(OptimizePartitionResultProperty):
+    """Policy to minimize largest partition size.  When partition sizes are tied, 
+    in-problem choices are favored, then partition count optimization is used.
+    """
+
+    _comparator_sequence = [
+        lambda a, b: cmp(a.stats.largest, b.stats.largest),
+        lambda a, b: cmp(b.stats.in_solution, a.stats.in_solution),
+        lambda a, b: cmp(b.stats.n, a.stats.n),
+        lambda a, b: cmp(a.root, b.root)
+        ]
+
+
+class MaximizePartitionCount01(OptimizePartitionResultProperty):
+    """Policy to maximize partition count size.  When partition counts are tied,
+    in-problem choices are favored, then largest partition size optimization is used.
+    """
+
+    _comparator_sequence = [
+        lambda a, b: cmp(b.stats.n, a.stats.n),
+        lambda a, b: cmp(b.stats.in_solution, a.stats.in_solution),
+        lambda a, b: cmp(a.stats.largest, b.stats.largest),
+        lambda a, b: cmp(a.root, b.root)
+        ]
 
 
 class MinimizeLargestPartitionInProblem(MinimizeLargestPartition):
@@ -235,5 +273,7 @@ STRATEGIES = {
     'max_parts': MaximizePartitionCount,
     'min_largest_in': MinimizeLargestPartitionInProblem,
     'max_parts_in': MaximizePartitionCountInProblem,
+    'min_largest_01': MinimizeLargestPartition01,
+    'max_parts_01': MaximizePartitionCount01,
 }
 """Maps symbolic names to strategy classes."""
