@@ -31,6 +31,11 @@ def parser():
                    action='store_true', dest='list_strategies',
                    default=False)
 
+    p.add_argument('--list-long', '-L',
+                   help='List strategies, with documentation.',
+                   action='store_true', dest='list_strategies_long',
+                   default=False)
+
     p.add_argument('--root', '-r', type=int,
                    help='Initial guess',
                    action='store', dest='root',
@@ -43,17 +48,35 @@ def parser():
 
     return p
 
-def list_strategies(output=sys.stdout):
-    for s in sorted(STRATEGIES.keys()):
-        print >>output, s
+
+def list_strategies(showdocs, output=sys.stdout):
+    def data_docs(name):
+        s = STRATEGIES[name]
+        sdoc = s.__doc__ or '<not documented>'
+        ev = s.SOLUTION_EVALUATOR
+        evdoc = ev.__doc__ or '<not documented>'
+        return (name, sdoc, evdoc)
+
+    def data_short(name):
+        return (name, )
+        
+    if showdocs:
+        fmt = "{}: {}\n    Tree evaluator: {}"
+        data = data_docs
+    else:
+        fmt = "{}"
+        data = data_short
+
+    for name in sorted(STRATEGIES.keys()):
+        print >>output, fmt.format(*data(name))
 
 
 def main():
     p = parser()
     args = p.parse_args()
 
-    if args.list_strategies:
-        list_strategies()
+    if args.list_strategies or args.list_strategies_long:
+        list_strategies(args.list_strategies_long)
         sys.exit(0)
 
     if not args.strategy:
@@ -65,7 +88,7 @@ def main():
     if not s:
         p.print_help(sys.stderr)
         print >>sys.stderr, "Unknown strategy name: '{}', available names are:".format(args.strategy)
-        list_strategies(sys.stderr)
+        list_strategies(False, sys.stderr)
         sys.exit(1)
 
     if args.maxdepth <= 0:
