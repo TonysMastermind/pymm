@@ -19,6 +19,7 @@ Tree analysis results
    maxlen-6-5701-moves
    maxlen-6-5842-moves
    random
+   exhaustive-distinct
 
 
 Terms

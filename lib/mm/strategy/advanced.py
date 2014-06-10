@@ -44,6 +44,10 @@ class ScanDistinctFollowers(builder.BuilderContext):
         self._set_root_problem()
         self._set_preserving()
 
+        if len(self._preserving) == 1:
+            self._distinct_candidates = self._problem_set - self._prefix_set
+            return
+
         if not self.parent:
             if len(self.problem) == CODETABLE.NCODES:
                 self._distinct_candidates = CODETABLE.FIRST
@@ -64,6 +68,10 @@ class ScanDistinctFollowers(builder.BuilderContext):
             return
 
         p0 = self.parent._preserving
+        if len(p0) == 1:
+            self._preserving = p0
+            return
+
         c = self.path[-1].root
         self._preserving = XFTBL.preserving((c,), seed=p0)
 

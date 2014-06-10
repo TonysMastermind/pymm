@@ -41,7 +41,10 @@ class MinimizeMoveCount(builder.SolutionEvaluator):
         elif state[0].stats.total_moves > tree.stats.total_moves:
             state[0] = tree
         elif state[0].stats.total_moves == tree.stats.total_moves:
-            if state[0].stats.max_depth > tree.stats.max_depth:
+            if state[0].root_in_solution == tree.root_in_solution:
+                if state[0].stats.max_depth > tree.stats.max_depth:
+                    state[0] = tree
+            elif tree.root_in_solution:
                 state[0] = tree
 
         return state[2] is not None
