@@ -39,7 +39,7 @@ class MinimizeMoveCount(builder.SolutionEvaluator):
         if not state[0]:
             state[0] = tree
         elif state[0].stats.total_moves > tree.stats.total_moves:
-            stats[0] = tree
+            state[0] = tree
         elif state[0].stats.total_moves == tree.stats.total_moves:
             if state[0].stats.max_depth > tree.stats.max_depth:
                 state[0] = tree
@@ -88,7 +88,7 @@ class MinimizeTreeDepth(builder.SolutionEvaluator):
         if not state[0]:
             state[0] = tree
         elif state[0].stats.max_depth < tree.stats.max_depth:
-            stats[0] = tree
+            state[0] = tree
         elif state[0].stats.max_depth == tree.stats.max_depth:
             if state[0].stats.total_moves > tree.stats.total_moves:
                 state[0] = tree

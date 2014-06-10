@@ -45,7 +45,7 @@ class ScanDistinctFollowers(builder.BuilderContext):
         self._set_preserving()
 
         if not self.parent:
-            if len(self._problem) == CODETABLE.NCODES:
+            if len(self.problem) == CODETABLE.NCODES:
                 self._distinct_candidates = CODETABLE.FIRST
                 return
 
