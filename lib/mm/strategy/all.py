@@ -5,3 +5,4 @@ Ensures that :py:data:`.STRATEGIES` is updated with all the strategy classes.
 
 from . import *
 from . import advanced
+from . import custom

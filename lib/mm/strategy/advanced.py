@@ -102,7 +102,7 @@ class ScanDistinctFollowers(builder.BuilderContext):
 
     def _best_candidates(self):
         if self.problem_size <= 2:
-            return list(partition.PartitionResult(self.problem, c) for c in (min(self.problem),))
+            return (partition.PartitionResult(self.problem, min(self.problem)), )
 
         candidates = []
         optimal = None
