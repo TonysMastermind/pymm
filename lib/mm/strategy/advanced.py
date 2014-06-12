@@ -80,12 +80,10 @@ class ScanDistinctFollowers(builder.BuilderContext):
 
 
     def _set_root_problem(self):
-        self._root_problem = None
+        self._root_problem = self._problem_set
 
         if self.parent:
-            self._root_problem = self.parent._problem_set
-        else:
-            self._root_problem = self._problem_set
+            self._root_problem = self.parent._root_problem
 
 
     def compute_candidates(self):

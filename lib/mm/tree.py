@@ -301,7 +301,7 @@ def optimal_tree(pr):
     t = Tree(pr.root)
     for score in _SCORE_LIST:
         if score == CODETABLE.PERFECT_SCORE:
-            t.in_solution = True
+            t.root_in_solution = True
             continue
         prob = pr.parts[score]
         if prob:

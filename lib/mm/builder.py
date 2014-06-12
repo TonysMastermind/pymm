@@ -135,10 +135,6 @@ class BuilderContext(descr.WithDescription):
           the problem.
         :type candidates: collection of :py:class:`.partition.PartitionResult`
         """
-
-        score.initialize()
-        xforms.initialize()
-
         self.candidates = candidates
         """Preselected initial guess candidats."""
 
@@ -185,6 +181,10 @@ class BuilderContext(descr.WithDescription):
         """:return: the size of the mastermind problem."""
         return len(self.problem)
 
+
+    @classmethod
+    def preselected(clazz, problem, root):
+        return (PartitionResult(problem, root),)
 
     def candidate_guesses(self):
         """Returns a selection of guesses suitable for solving the current problem.
@@ -282,7 +282,7 @@ class TreeBuilder(descr.WithDescription):
         """
         candidates = None
         if root:
-            candidates = (PartitionResult(self.root_problem, root),)
+            candidates = self.strategy.preselected(self.root_problem, root)
 
         ctx = self.strategy(self.root_problem, None, candidates)
         (u, t) = usage.time(lambda: self._solve(ctx, maxdepth))
