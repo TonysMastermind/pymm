@@ -65,6 +65,8 @@ def action(ctx):
 
     vpfx = (CODETABLE.CODES[c] for c in pfx)
     pfxstr = ''.join(map(str, vpfx))
+    vpath = ((CODETABLE.CODES[c], s) for (c, s) in ctx.path)
+    pathstr = '.'.join(map(lambda p: str(p[0])+str(score.SCORE_TABLE.SCORES[p[1]].to_string()), vpath))
 
     sizes = ()
     children = tree.get('children')
@@ -73,7 +75,7 @@ def action(ctx):
 
     stats = tree['stats']
     print "'{}',{},{},{},{},{},{},{}".format(
-        pfxstr, len(pfx), tree['problem_size'], stats['total_moves'], stats['max_depth'],
+        pathstr, len(pfx), tree['problem_size'], stats['total_moves'], stats['max_depth'],
         (1 if tree['in_solution'] else 0), (1 if stats['optimal'] else 0), 
         ','.join(map(str, sizes)))
 
@@ -87,6 +89,8 @@ def print_tree(tree):
     w.walktree(tree)
 
 def main():
+    initialize()
+
     fname = None
     if len(sys.argv) > 1:
         fname = sys.argv[1]

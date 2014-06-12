@@ -65,6 +65,8 @@ class Score(NamedScoreTuple):
             self.__class__.__name__, 
             *self)
 
+    def to_string(self):
+        return '(e={}, a={})'.format(self.exact, self.approx)
 
     @staticmethod
     def from_encoded(c1, c2):
@@ -143,7 +145,7 @@ class ScoreTable(singleton.SingletonBehavior):
         are small integers representing mastermind scores.
         """
 
-        self.ENCODED_SCORES = dict((s, i) for (i, s) in enumerate(self.SCORES))
+        self.ENCODED_SCORES = {s: i for (i, s) in enumerate(self.SCORES)}
         """Mapping from tuple-scores to numeric encoding; used like
         this:
 
