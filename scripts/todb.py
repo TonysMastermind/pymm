@@ -8,11 +8,18 @@ import time
 import sys
 
 ROOT_ID = None
-SEQ = int(time.time())
 
 def initialize():
     score.initialize()
     xforms.initialize()
+
+def node_id(ctx):
+    if not ctx.parent:
+        return ROOT_ID
+
+    spfx = map(lambda cs: '.'.join(map(str, cs)), ctx.path)
+    pfx = ':'.join(spfx)
+    return "{}.{}".format(ROOT_ID, pfx)
 
 
 def populate_stats(tree):
@@ -65,19 +72,16 @@ def action(ctx):
     tree = ctx.tree
     pfx  = ctx.prefix
 
-    global SEQ
-    ctx.tree_id = ROOT_ID + '.' + str(SEQ)
-    SEQ += 1
+    ctx.tree_id = node_id(ctx)
 
     parent_id = 'NULL'
     if ctx.parent:
         parent_id = "'" + ctx.tree_id + "'"
 
+    score = 'NULL'
+    if ctx.path:
+        score = ctx.path[-1][1]
 
-    vpfx = (CODETABLE.CODES[c] for c in pfx)
-    pfxstr = ''.join(map(str, vpfx))
-    vpath = ((CODETABLE.CODES[c], s) for (c, s) in ctx.path)
-    pathstr = '.'.join(map(lambda p: str(p[0])+str(score.SCORE_TABLE.SCORES[p[1]].to_string()), vpath))
 
     sizes = ()
     children = tree.get('children')
@@ -85,18 +89,19 @@ def action(ctx):
         sizes = tuple(reversed(sorted(child['problem_size'] for child in children.itervalues())))
 
     stats = tree['stats']
-    print "'{}',{},'{}',{},{},{},{},{},{},{},{}".format(
+    print "insert into tree_node values('{}',{},{},{},{},{},{},{},{},{},{},{});".format(
         ctx.tree_id,
         parent_id,
-        pathstr, 
-        len(pfx),
+        tree['root'],
+        score,
+        len(ctx.path),
         tree['problem_size'], 
-        stats['total_moves'], 
-        stats['max_depth'],
-        (1 if tree['in_solution'] else 0), 
-        (1 if stats['optimal'] else 0), 
         (sizes[0] if len(sizes) else 'NULL'),
-        len(sizes))
+        len(sizes),
+        (1 if tree['in_solution'] else 0),
+        (1 if stats['optimal'] else 0), 
+        stats['total_moves'], 
+        stats['max_depth'])
 
     return True
 
