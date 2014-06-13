@@ -312,8 +312,9 @@ class TreeBuilder(descr.WithDescription):
 
 
     def _solve(self, ctx, remaining):
+        _trace = None
         if ctx.depth <= 2:
-            self._Trace(ctx)
+            _trace = self._Trace(ctx)
 
         if not ctx.possible(remaining):
             return None
