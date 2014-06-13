@@ -71,7 +71,8 @@ class TreeResult(descr.WithDescription):
             'tree': self.tree.as_dict() if self.tree else None,
             'metrics': {
                 'rusage': self.rusage.as_dict(),
-                'python': platform.python_implementation()
+                'python': [platform.python_implementation(),
+                           platform.python_version()],
                 },
             'strategy': self.strategy.description(),
             'max_levels': self.max_levels,
