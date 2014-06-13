@@ -8,6 +8,12 @@ from .. import distinct as distinct
 from .. import partition as partition
 from .. import xforms as xforms
 
+MAX_PROBLEM_SIZE = (CODETABLE.NCODES,           # 0, 1296
+                    CODETABLE.NCODES/4,         # 1, 324
+                    CODETABLE.NCODES/4/4,       # 2, 81
+                    CODETABLE.NCODES/4/4/4,     # 3, 20
+                    CODETABLE.NCODES/4/4/4/4,   # 4, 5
+                    CODETABLE.NCODES/4/4/4/4/4) # 5, 1
 
 class ScanDistinctFollowers(builder.BuilderContext):
     """General purpose property optimizer for :py:class:`..partition.PartitionResult`
@@ -24,6 +30,10 @@ class ScanDistinctFollowers(builder.BuilderContext):
     restrict_to_problem = False
     """When true, candidate comupation is restricted to the problem; otherwise
     the selection examines all possible codes."""
+
+    restrict_problem_size = False
+    """When true, candidate comupation fails when the problem size exceeds pre-specified
+    thresholds (at each depth)."""
 
 
     def __init__(self, problem, step, candidates=None):
@@ -92,8 +102,14 @@ class ScanDistinctFollowers(builder.BuilderContext):
 
         :return: an iterable of :py:class:`..partition.PartitionResult` instances.
         """
-        if not self._answer:
-            self._answer = self._best_candidates()
+        if self._answer is None:
+            if self.restrict_problem_size and \
+                    self.depth < len(MAX_PROBLEM_SIZE) and \
+                    self.problem_size > MAX_PROBLEM_SIZE[self.depth]:
+                self._answer = ()
+            else:
+                self._answer = self._best_candidates()
+
 
         return self._answer
 
@@ -123,28 +139,50 @@ class ScanDistinctFollowers(builder.BuilderContext):
 
 
 class MinimizeMoveCountUsingDistinctInProblem(ScanDistinctFollowers):
+    """Strategy to minimize move count in tree, using case-equivalence to reduce
+    candidates.  Restricts candidates to current problem."""
     restrict_to_problem = True
     SOLUTION_EVALUATOR = MinimizeMoveCount
 
 
 class MinimizeMoveCountUsingDistinct(ScanDistinctFollowers):
+    """Strategy to minimize move count in tree, using case-equivalence to reduce
+    candidates.  Uses all codes as candidates."""
     restrict_to_problem = False
     SOLUTION_EVALUATOR = MinimizeMoveCount
 
+class MinimizeMoveCountUsingDistinctOpt(MinimizeMoveCountUsingDistinct):
+    """Strategy to minimize move count in tree, using case-equivalence to reduce
+    candidates.  Uses all codes as candidates.  Fails when the problem size exceeds
+    a pre-specified threshold based on the path to the tree's problem."""
+    restrict_problem_size = True
 
 class MinimizeDepthUsingDistinctInProblem(ScanDistinctFollowers):
+    """Strategy to minimize tree depth, uses case-equivalence to reduce candidates.
+    Restricts candidates to current problem."""
     restrict_to_problem = True
     SOLUTION_EVALUATOR = MinimizeTreeDepth
 
 
 class MinimizeDepthUsingDistinct(ScanDistinctFollowers):
+    """Strategy to minimize tree depth, uses case-equivalence to reduce candidates.
+    Restricts candidates to current problem. Considers all codes as candidates."""
     restrict_to_problem = False
     SOLUTION_EVALUATOR = MinimizeTreeDepth
 
 
+class MinimizeDepthUsingDistinctOpt(MinimizeDepthUsingDistinct):
+    """Strategy to minimize tree depth, uses case-equivalence to reduce candidates.
+    Restricts candidates to current problem. Considers all codes as candidates.
+    Fails when the problem size exceeds a pre-specified threshold based on the 
+    path to the tree's problem."""
+    restrict_problem_size = True
+
 STRATEGIES.update({
         'min_moves_distinct_in': MinimizeMoveCountUsingDistinctInProblem,
         'min_moves_distinct':  MinimizeMoveCountUsingDistinct,
+        'min_moves_distinct_opt':  MinimizeMoveCountUsingDistinctOpt,
         'min_depth_distinct_in': MinimizeDepthUsingDistinctInProblem,
         'min_depth_distinct': MinimizeDepthUsingDistinct,
+        'min_depth_distinct_opt': MinimizeDepthUsingDistinctOpt,
         })
