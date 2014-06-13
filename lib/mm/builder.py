@@ -241,7 +241,7 @@ class BuilderContext(descr.WithDescription):
         guesses.  However, a false result means that it's impossible split the current problem
         into subproblems of size 1 with the given budget of moves.
         """
-        return self.problem_size <= size_limit(remaining)
+        return remaining > 0 and self.problem_size <= size_limit(remaining)
 
 
     @classmethod
@@ -304,6 +304,9 @@ class TreeBuilder(descr.WithDescription):
             return tree.two_element_tree(ctx.problem)
 
         candidates = ctx.candidate_guesses()
+        if not candidates:
+            return None
+
         evaluator = ctx.solution_evaluator()
         state = evaluator.initial_state()
 
@@ -319,9 +322,17 @@ class TreeBuilder(descr.WithDescription):
                     return evaluator.best(state)
             else:
                 subtrees = [None] * CODETABLE.NSCORES
-                for score in _SCORE_LIST:
+
+                # Proceed thru parts in descending size.  Larger partitions
+                # are more likely to fail under a depth constraint than smaller
+                # ones.
+                for score in sorted(_SCORE_LIST, lambda a, b: cmp(len(pr.parts[b]), 
+                                                                  len(pr.parts[a]))):
                     prob = pr.parts[score]
-                    if (not prob) or (score == CODETABLE.PERFECT_SCORE):
+                    if not prob: # we hit the zeros, exit loop.
+                        break 
+
+                    if score == CODETABLE.PERFECT_SCORE:
                         continue
 
                     child = self._solve(self.strategy(prob, ctx.step(pr.root, score)),
