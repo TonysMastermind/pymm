@@ -11,7 +11,9 @@ from . import xforms
 from partition import PartitionResult
 
 from collections import namedtuple
+import datetime
 import random
+import sys
 
 _MAX_PARTS = CODETABLE.NSCORES - 1
 
@@ -293,7 +295,26 @@ class TreeBuilder(descr.WithDescription):
         return t
 
 
+    class _Trace(object):
+        def __init__(self, ctx):
+            self.ctx = ctx
+            print >>sys.stderr, ">> {} probsize={} path={}".format(
+                datetime.datetime.now().isoformat(),
+                ctx.problem_size, 
+                list((s.root, s.score) for s in ctx.path))
+
+        def __del__(self):
+            ctx = self.ctx
+            print >>sys.stderr, "<< {} probsize={} path={}".format(
+                datetime.datetime.now().isoformat(),
+                ctx.problem_size, 
+                list((s.root, s.score) for s in ctx.path))
+
+
     def _solve(self, ctx, remaining):
+        if ctx.depth <= 2:
+            self._Trace(ctx)
+
         if not ctx.possible(remaining):
             return None
 
