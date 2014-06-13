@@ -215,7 +215,7 @@ class MinimizeLargestPartition(OptimizePartitionResultProperty):
 
 
 class MaximizePartitionCount(OptimizePartitionResultProperty):
-    """Policy to maximize partition count size.  When partition counts are tied,
+    """Policy to maximize partition count.  When partition counts are tied,
     largest partition size optimization is used.
     """
 
@@ -242,7 +242,7 @@ class MinimizeLargestPartition01(OptimizePartitionResultProperty):
 
 
 class MaximizePartitionCount01(OptimizePartitionResultProperty):
-    """Policy to maximize partition count size.  When partition counts are tied,
+    """Policy to maximize partition count.  When partition counts are tied,
     in-problem choices are favored, then largest partition size optimization is used.
     """
 
