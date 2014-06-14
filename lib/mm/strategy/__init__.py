@@ -125,12 +125,12 @@ class OptimizePartitionResultProperty(builder.BuilderContext):
     the selection examines all possible codes."""
 
 
-    def __init__(self, problem, step, candidates=None):
+    def __init__(self, problem, step, candidates=None, **kwargs):
         """:param problem: problem under analysis.
         :param step: from parent problem to this problem.
         :param candidates: pre-selected candidates.
         """
-        super(OptimizePartitionResultProperty, self).__init__(problem, step, candidates=candidates)
+        super(OptimizePartitionResultProperty, self).__init__(problem, step, candidates=candidates, **kwargs)
 
         self._answer = None
         self._prefix_set = frozenset(self.prefix)

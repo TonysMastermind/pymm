@@ -1,19 +1,25 @@
 """Mastermind Strategy Tree builder."""
 
 from . import *
-from . import partition 
 from . import descr 
+from . import partition 
+from . import progress
 from . import score
 from . import tree
 from . import usage
 from . import xforms
 
 from partition import PartitionResult
+from progress import ReportingCalculationStatus
 
 from collections import namedtuple
 import datetime
+import os
 import random
 import sys
+
+SOCKET_NAME_TEMPLATE = 'unix://default//tmp/mm.progress.{}'
+"""Default datagram socket address template, instantiated with a process id."""
 
 _MAX_PARTS = CODETABLE.NSCORES - 1
 
@@ -127,7 +133,7 @@ class BuilderContext(descr.WithDescription):
     STEP_CLASS = BuilderStep
     """Step class."""
 
-    def __init__(self, problem, step, candidates=None):
+    def __init__(self, problem, step, candidates=None, status_socket=None):
         """
         :param parent: parent context.
         :param problem: problem to be solved.
@@ -136,7 +142,28 @@ class BuilderContext(descr.WithDescription):
         :param candidates: a preselected collection of candidates to use for solving
           the problem.
         :type candidates: collection of :py:class:`.partition.PartitionResult`
+        :param status_socket: optional address to report status to.
+        :type status_socket: str.
         """
+
+        self.status_socket = status_socket or SOCKET_NAME_TEMPLATE.format(os.getpid())
+        """Socket address where progress messages sent.  Initialized from the input
+        parameter by the same name when not null/empty, otherwise, instantiates
+        :py:data:`.SOCKET_NAME_TEMPLATE` with the process id, and uses the result.
+
+        The syntax for this attribute is: ``unix://<id>/<path>``, or ``ip://<id>/<host>:<port>``.
+
+        For IP addresses, the host will be resolved and its address used for the lifetime 
+        of the program.   This may be an issue with long-lived solvers and dynamically 
+        changing addresses.
+
+        The ``<id>`` component identifies the message source.  Since ``/`` is the syntactic delimiter,
+        an ``<id>`` cannot contain that character.
+
+        If ``<path>`` component is an absolute path, then it must start with a ``/``; 
+        see :py:data:`.SOCKET_NAME_TEMPLATE`, which uses an absolute path.
+        """
+
         self.candidates = candidates
         """Preselected initial guess candidats."""
 
@@ -156,10 +183,12 @@ class BuilderContext(descr.WithDescription):
             self.parent = step.origin
             self.path = self.parent.path + (step,)
             self.prefix = self.parent.prefix + (step.root,)
+            self.status = ReportingCalculationStatus(step.origin.status, len(self.problem))
         else:
             self.parent = None
             self.path = tuple()
             self.prefix = tuple()
+            self.status = ReportingCalculationStatus(None, len(self.problem), root_ctx=self)
 
 
     def step(self, root, score):
@@ -251,22 +280,36 @@ class BuilderContext(descr.WithDescription):
         return descr.base_description(clazz)
 
     @classmethod
-    def build_tree(clazz, problem, maxdepth, root=None):
-        return TreeBuilder(clazz, problem).build(maxdepth, root=root)
+    def build_tree(clazz, problem, maxdepth, root=None, progress=None):
+        return TreeBuilder(clazz, problem, progress).build(maxdepth, root=root)
 
 
 
 class TreeBuilder(descr.WithDescription):
     """Tree builder framework."""
 
-    def __init__(self, strategy, problem):
+    def __init__(self, strategy, problem, progress):
         """:param strategy: strategy/context class.
         :param problem: the master mind problem, a collection of codes in numeric form.
         :type problem: list, or tuple.
+        :param progress: destination of progress messages.  See :py:module:`.progress` for details.
         """
-        self.strategy = strategy
-        self.root_problem = problem
 
+        self.strategy = strategy
+        """Builder strategy."""
+
+        self.root_problem = problem
+        """Root problem."""
+
+        self.entry_count = 0
+        """Number of times the recursive solver has been entered."""
+
+        self.reporting_cycle = 10000
+        """Progress sampling cycle, once per :py:attr:`.TreeBuilder.reporting_cycle` entries
+        into recursive solver."""
+
+        self.progress = progress
+        """Destination of progress messages."""
 
     def description_qualifiers(self):
         return {
@@ -286,7 +329,7 @@ class TreeBuilder(descr.WithDescription):
         if root:
             candidates = self.strategy.preselected(self.root_problem, root)
 
-        ctx = self.strategy(self.root_problem, None, candidates)
+        ctx = self.strategy(self.root_problem, None, candidates, status_socket=self.progress)
         (u, t) = usage.time(lambda: self._solve(ctx, maxdepth))
         if t:
             t.stats.set_timing(u)
@@ -295,26 +338,10 @@ class TreeBuilder(descr.WithDescription):
         return t
 
 
-    class _Trace(object):
-        def __init__(self, ctx):
-            self.ctx = ctx
-            print >>sys.stderr, ">> {} probsize={} path={}".format(
-                datetime.datetime.now().isoformat(),
-                ctx.problem_size, 
-                list((s.root, s.score) for s in ctx.path))
-
-        def __del__(self):
-            ctx = self.ctx
-            print >>sys.stderr, "<< {} probsize={} path={}".format(
-                datetime.datetime.now().isoformat(),
-                ctx.problem_size, 
-                list((s.root, s.score) for s in ctx.path))
-
-
     def _solve(self, ctx, remaining):
-        _trace = None
-        if ctx.depth <= 2:
-            _trace = self._Trace(ctx)
+        self.entry_count += 1
+        if self.entry_count % self.reporting_cycle == 0:
+            ctx.status.report(self.entry_count)
 
         if not ctx.possible(remaining):
             return None
@@ -329,13 +356,18 @@ class TreeBuilder(descr.WithDescription):
         if not candidates:
             return None
 
+        ctx.status.candidate_count = len(candidates)
+
         evaluator = ctx.solution_evaluator()
         state = evaluator.initial_state()
 
         for pr in candidates:
+            ctx.status.next_candidate(pr)
+
             s = pr.stats
             if s.n < 2: # not a usable guess.
                 continue
+
 
             t = None
             if pr.stats.optimal:
@@ -352,7 +384,10 @@ class TreeBuilder(descr.WithDescription):
                                                                   len(pr.parts[a]))):
                     prob = pr.parts[score]
                     if not prob: # we hit the zeros, exit loop.
-                        break 
+                        break
+
+                    # count a non-empty child
+                    ctx.status.cur_child += 1
 
                     if score == CODETABLE.PERFECT_SCORE:
                         continue
@@ -366,7 +401,7 @@ class TreeBuilder(descr.WithDescription):
                     subtrees[score] = child
 
                 if not subtrees: # failed building subtrees.
-                    continue
+                    continue # to next candidate
 
                 t = tree.Tree(pr.root)
                 for score in _SCORE_LIST:

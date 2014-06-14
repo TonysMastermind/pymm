@@ -47,6 +47,11 @@ def parser():
                    action='store', dest='output',
                    default=None)
 
+    p.add_argument('--progress', '-p',
+                   help='Progress socket destination, including identifier; default is unix://default//tmp/mm.progress.<pid>',
+                   action='store', dest='progress',
+                   default=None)
+
     return p
 
 
@@ -103,7 +108,7 @@ def main():
 
     initialize()
 
-    t = s.build_tree(CODETABLE.ALL, args.maxdepth, args.root)
+    t = s.build_tree(CODETABLE.ALL, args.maxdepth, args.root, progress=args.progress)
 
     if args.output:
         t.to_json_file(args.output)
