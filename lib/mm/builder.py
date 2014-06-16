@@ -290,9 +290,11 @@ class TreeBuilder(descr.WithDescription):
 
     def __init__(self, strategy, problem, progress):
         """:param strategy: strategy/context class.
-        :param problem: the master mind problem, a collection of codes in numeric form.
+        :param problem: the master mind problem, a collection of codes in 
+           numeric form.
         :type problem: list, or tuple.
-        :param progress: destination of progress messages.  See :py:module:`.progress` for details.
+        :param progress: destination of progress messages.  See 
+          :py:mod:`.progress` for details.
         """
 
         self.strategy = strategy
@@ -305,8 +307,9 @@ class TreeBuilder(descr.WithDescription):
         """Number of times the recursive solver has been entered."""
 
         self.reporting_cycle = 10000
-        """Progress sampling cycle, once per :py:attr:`.TreeBuilder.reporting_cycle` entries
-        into recursive solver."""
+        """Progress sampling cycle, once per 
+        :py:attr:`.TreeBuilder.reporting_cycle` entries into recursive 
+        solver."""
 
         self.progress = progress
         """Destination of progress messages."""

@@ -212,3 +212,5 @@ autodoc_mock_imports = []
 autodoc_member_order = 'groupwise'
 
 intersphinx_mapping = {'python': ('http://docs.python.org/2.7', 'objects.inv')}
+
+todo_include_todos = True

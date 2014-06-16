@@ -1,17 +1,23 @@
 .. highlight:: python
 
 
-Contents
-========
+Links
+=====
 
 .. toctree::
    :maxdepth: 2
 
    casequiv
+   TODO
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+TODO list
+=========
+
+.. todolist::
 
 
 References
