@@ -96,7 +96,8 @@ class CalculationStatus(object):
         p = self
         while p:
             struct.pack_into(STATUS_FORMAT, msg, offset,
-                             p.problem_size, p.candidate_count, p.child_count, p.cur_candidate, p.cur_child)
+                             p.problem_size, p.candidate_count, p.child_count, 
+                             p.cur_candidate, p.cur_child)
             offset += STATUS_SIZE
             p = p.parent
 
@@ -105,7 +106,8 @@ class CalculationStatus(object):
 
     def to_string(self):
         return "size={} candidates={}/{} children={}/{}".format(
-            self.problem_size, self.cur_candidate, self.candidate_count, self.cur_child, self.child_count)
+            self.problem_size, self.cur_candidate, self.candidate_count, 
+            self.cur_child, self.child_count)
         
 
     def __repr__(self):
@@ -154,7 +156,8 @@ class CalculationStatus(object):
             offset += STATUS_SIZE
 
             node = CalculationStatus(None, data[0])
-            node.candidate_count, node.child_count, node.cur_candidate, node.cur_child = data[1:]
+            node.candidate_count, node.child_count, node.cur_candidate, node.cur_child = \
+                data[1:]
             chain.append(node)
 
         for i in xrange(n-1):
