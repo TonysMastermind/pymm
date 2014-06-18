@@ -10,43 +10,27 @@ Reject as soon as it becomes worse that current best.  Order candidates
 by asecnding max-partition-size, descending partition-count, so that
 the best tree is likely to come up early.
 
+Adjust tree evaluator state to use a tracker similar to this:
+
 .. code-block:: python
 
-  # use a priority queue for this, should be more efficient.
-  candidates = sorted(candidates, 
-                      lambda a, b: cmp(a.stats.largest, b.stats.largest) or
-		                   cmp(b.stats.n, a.stats.n))
+  class Tracker(object):
+      def __init__(self):
+          self.available_moves = MAX_INT
+          self.max_depth = MAX_INT
+	  self.best_tree = None
 
-  for c in candidates:
-      cur_best = None
+      def add_child(self, child):
+          self.available_moves -= (child.stats.total_moves + child.problem_size)
+          self.max_depth = min(self.max_depth, 1 + child.max_depth)
+	  return self.available_moves < 0 or self.max_depth < child.max_depth
 
-      ...
+      def reset(self, t):
+          self.available_moves = t.stats.total_moves
+          self.max_depth = t.max_depth
 
-      moves = 0
-      max_depth = 0
 
-      parts = ((s, p) for (s, p) in enumerate(c.parts) if len(p))
-      parts = sorted(parts, lambda a, b: cmp(b[1].stats.largest, a[1].stats.largest))
+.. todo::
 
-      t = tree.Tree(c.root)
-      if c.stats.in_solution:
-          t.root_in_solution = True
-          moves += 1
-
-      for (s, p) in parts:
-          ...
-          child = self._solve(...)
-	  t.add_child(child) # must update stats dynamically.
-
-          if cur_best and self.better_tree(t, cur_best) is not t:
-	      t = None
-              break
-
-      if t is None:
-          continue
-
-      # evaluate
-      # set cur_best
-
-  ...
-
+   Use a pre-linked array of status objects instead of creating new ones.
+   Add a ``reset()`` method to reinitialize them.
