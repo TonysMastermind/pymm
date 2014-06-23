@@ -8,7 +8,7 @@ import json
 
 class TreeTestCase(ut.TestCase):
     def testTreeBuild(self):
-        b = builder.TreeBuilder(builder.BuilderContext, CODETABLE.ALL)
+        b = builder.TreeBuilder(builder.BuilderStrategy, CODETABLE.ALL, progress=None)
         t = b.build(10, root=8)
         self.verifyTree(t.tree, 10, CODETABLE.ALL)
 
@@ -28,13 +28,13 @@ class TreeTestCase(ut.TestCase):
         self.assertGreater(s.find(str(CODETABLE.NCODES)), 0)
 
     def testCantBuild(self):
-        b = builder.TreeBuilder(builder.BuilderContext, CODETABLE.ALL)
+        b = builder.TreeBuilder(builder.BuilderStrategy, CODETABLE.ALL, progress=None)
         t = b.build(3, root=8)
         self.assertIs(None, t.tree)
 
 
     def testDescription(self):
-        b = builder.TreeBuilder(builder.BuilderContext, CODETABLE.ALL)
+        b = builder.TreeBuilder(builder.BuilderStrategy, CODETABLE.ALL, progress=None)
         d = b.description()
         self.assertGreater(d.find(str(CODETABLE.NCODES)), 0)
 

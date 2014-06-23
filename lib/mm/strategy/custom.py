@@ -56,10 +56,10 @@ def fmt_tree(label, t, pth):
 
 
 class DebugMinimizeMoveCount(MinimizeMoveCount):
-    def evaluate(self, ctx, tree, state):
-        self.log_conditions('Before', ctx, tree, state, None)
-        result = super(DebugMinimizeMoveCount, self).evaluate(ctx, tree, state)
-        self.log_conditions('After', ctx, tree, state, result)
+    def evaluate(self, strat, tree, state):
+        self.log_conditions('Before', strat, tree, state, None)
+        result = super(DebugMinimizeMoveCount, self).evaluate(strat, tree, state)
+        self.log_conditions('After', strat, tree, state, result)
         return result
 
     def best(self, state):
@@ -69,11 +69,11 @@ class DebugMinimizeMoveCount(MinimizeMoveCount):
             fmt_tree('--state['+str(i)+']', s, '-')
         return base
 
-    def log_conditions(self, label, ctx, tree, state, result):
-        if not ctx.debug_enabled:
+    def log_conditions(self, label, strat, tree, state, result):
+        if not strat.debug_enabled:
             return
 
-        pth = tuple((s.root, s.score) for s in ctx.path)
+        pth = tuple((s.root, s.score) for s in strat.path)
 
         if result is None:
             result = '-'

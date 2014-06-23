@@ -88,11 +88,10 @@ class SolutionEvaluator(descr.WithDescription):
         return [None]
 
 
-    def evaluate(self, ctx, tree, state):
-        """Evaluate the strategy tree in the given context, and update evaluation
-        state.
+    def evaluate(self, strategy, tree, state):
+        """Evaluate the tree in the given strategy, and update evaluation state.
 
-        :param ctx: problem context.
+        :param strategy: problem context.
         :param tree: subject of evaluation.
         :param state: state of the evaluation.
         :return: True to indicate that the best possible solution was found, and futher
@@ -117,15 +116,15 @@ class SolutionEvaluator(descr.WithDescription):
 
 
 BuilderStep = namedtuple('BuilderStep', ['root', 'score', 'origin'])
-"""Derivation step from a :py:class:`.BuilderContext` to a child instance.
+"""Derivation step from a :py:class:`.BuilderStrategy` to a child instance.
 
-:param origin: the :py:class:`.BuilderContext` where the problem resides.
+:param origin: the :py:class:`.BuilderStrategy` where the problem resides.
 :param root: a mastermind numeric code representing a guess againts the origin's problem.
 :param score: a score resulting from guessing *root* against the origin's problem.
 """
 
-class BuilderContext(descr.WithDescription):
-    """Tree construction context."""
+class BuilderStrategy(descr.WithDescription):
+    """Tree construction strategy."""
 
     SOLUTION_EVALUATOR = SolutionEvaluator
     """Solution evaluator class."""
@@ -135,7 +134,7 @@ class BuilderContext(descr.WithDescription):
 
     def __init__(self, problem, step, candidates=None, status_socket=None):
         """
-        :param parent: parent context.
+        :param parent: parent strategy.
         :param problem: problem to be solved.
         :param step: a *(guess, score)* pair indicating the derivation of the problem from
           its parent.
@@ -168,7 +167,7 @@ class BuilderContext(descr.WithDescription):
         """Preselected initial guess candidats."""
 
         self.parent = None
-        """Parent context."""
+        """Parent strategy."""
 
         self.problem = problem
         """Problem being solved."""
@@ -177,7 +176,7 @@ class BuilderContext(descr.WithDescription):
         """A sequence of *(code, score)* pairs from the root problem to the current problem."""
 
         self.prefix = None
-        """A sequence of numeric codes, representing the first elements :py:attr:`.BuilderContext.path` items."""
+        """A sequence of numeric codes, representing the first elements :py:attr:`.BuilderStrategy.path` items."""
 
         if step:
             self.parent = step.origin
@@ -223,7 +222,7 @@ class BuilderContext(descr.WithDescription):
         :return: an iterable of :py:class:`.PartitionResult` instances.
 
         If the attribute :py:attr:`.candidates`, then method returns its value.
-        Otherwise, it delegates to the method :py:meth:`.BuilderContext.compute_candidates`.
+        Otherwise, it delegates to the method :py:meth:`.BuilderStrategy.compute_candidates`.
         """
         if self.candidates:
             return self.candidates
@@ -232,7 +231,7 @@ class BuilderContext(descr.WithDescription):
 
 
     def compute_candidates(self):
-        """Returns a collection of candidate guesses suitable for use on the context's problem.
+        """Returns a collection of candidate guesses suitable for use on the strategy's problem.
 
         :return: an iterable of :py:class:`.PartitionResult` instances.
 
@@ -289,7 +288,7 @@ class TreeBuilder(descr.WithDescription):
     """Tree builder framework."""
 
     def __init__(self, strategy, problem, progress):
-        """:param strategy: strategy/context class.
+        """:param strategy: strategy class.
         :param problem: the master mind problem, a collection of codes in 
            numeric form.
         :type problem: list, or tuple.
@@ -332,8 +331,8 @@ class TreeBuilder(descr.WithDescription):
         if root:
             candidates = self.strategy.preselected(self.root_problem, root)
 
-        ctx = self.strategy(self.root_problem, None, candidates, status_socket=self.progress)
-        (u, t) = usage.time(lambda: self._solve(ctx, maxdepth))
+        strategy = self.strategy(self.root_problem, None, candidates, status_socket=self.progress)
+        (u, t) = usage.time(lambda: self._solve(strategy, maxdepth))
         if t:
             t.stats.set_timing(u)
 
@@ -341,31 +340,31 @@ class TreeBuilder(descr.WithDescription):
         return t
 
 
-    def _solve(self, ctx, remaining):
+    def _solve(self, strategy, remaining):
         self.entry_count += 1
         if self.entry_count % self.reporting_cycle == 0:
-            ctx.status.report(self.entry_count)
+            strategy.status.report(self.entry_count)
 
-        if not ctx.possible(remaining):
+        if not strategy.possible(remaining):
             return None
 
-        n = ctx.problem_size
+        n = strategy.problem_size
         if n == 1:
-            return tree.one_element_tree(ctx.problem[0])
+            return tree.one_element_tree(strategy.problem[0])
         if n == 2:
-            return tree.two_element_tree(ctx.problem)
+            return tree.two_element_tree(strategy.problem)
 
-        candidates = ctx.candidate_guesses()
+        candidates = strategy.candidate_guesses()
         if not candidates:
             return None
 
-        ctx.status.candidate_count = len(candidates)
+        strategy.status.candidate_count = len(candidates)
 
-        evaluator = ctx.solution_evaluator()
+        evaluator = strategy.solution_evaluator()
         state = evaluator.initial_state()
 
         for pr in candidates:
-            ctx.status.next_candidate(pr)
+            strategy.status.next_candidate(pr)
 
             s = pr.stats
             if s.n < 2: # not a usable guess.
@@ -375,7 +374,7 @@ class TreeBuilder(descr.WithDescription):
             t = None
             if pr.stats.optimal:
                 t = tree.optimal_tree(pr)
-                if evaluator.evaluate(ctx, t, state):
+                if evaluator.evaluate(strategy, t, state):
                     return evaluator.best(state)
             else:
                 subtrees = [None] * CODETABLE.NSCORES
@@ -390,12 +389,12 @@ class TreeBuilder(descr.WithDescription):
                         break
 
                     # count a non-empty child
-                    ctx.status.cur_child += 1
+                    strategy.status.cur_child += 1
 
                     if score == CODETABLE.PERFECT_SCORE:
                         continue
 
-                    child = self._solve(self.strategy(prob, ctx.step(pr.root, score)),
+                    child = self._solve(self.strategy(prob, strategy.step(pr.root, score)),
                                         remaining - 1)
                     if not child:
                         subtrees = None
@@ -411,7 +410,7 @@ class TreeBuilder(descr.WithDescription):
                     t.add_child(score, subtrees[score])
                 t.update_stats(pr)
 
-                if evaluator.evaluate(ctx, t, state):
+                if evaluator.evaluate(strategy, t, state):
                     return evaluator.best(state)
 
         result = evaluator.best(state)

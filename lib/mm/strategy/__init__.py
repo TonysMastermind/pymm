@@ -23,8 +23,8 @@ class MinimizeMoveCount(builder.SolutionEvaluator):
         return [None, None, None]
 
 
-    def evaluate(self, ctx, tree, state):
-        """:param ctx: ignored.
+    def evaluate(self, strat, tree, state):
+        """:param strat: ignored.
         :param tree: tree to be evaluated.
         :param state: cumulative state of evaluation.
         :return: False, unless an optimal tree with the root chosen from the
@@ -75,8 +75,8 @@ class MinimizeTreeDepth(builder.SolutionEvaluator):
         return [None, None, None]
 
 
-    def evaluate(self, ctx, tree, state):
-        """:param ctx: ignored.
+    def evaluate(self, strat, tree, state):
+        """:param strat: ignored.
         :param tree: tree to be evaluated.
         :param state: cumulative state of evaluation.
         :return: False, unless an optimal tree with the root chosen from the
@@ -110,7 +110,7 @@ def _not_implemented():
     raise MMException("Not implemented.")
 
 
-class OptimizePartitionResultProperty(builder.BuilderContext):
+class OptimizePartitionResultProperty(builder.BuilderStrategy):
     """General purpose property optimizer for :py:class:`..partition.PartitionResult`
     
     The method :py:meth:`.OptimizePartitionResultProperty.compare` is the
@@ -268,7 +268,7 @@ class MaximizePartitionCountInProblem(MaximizePartitionCount):
 
 
 STRATEGIES = {
-    'random': builder.BuilderContext,
+    'random': builder.BuilderStrategy,
     'min_largest': MinimizeLargestPartition,
     'max_parts': MaximizePartitionCount,
     'min_largest_in': MinimizeLargestPartitionInProblem,

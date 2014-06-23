@@ -15,7 +15,7 @@ MAX_PROBLEM_SIZE = (CODETABLE.NCODES,           # 0, 1296
                     CODETABLE.NCODES/4/4/4/4,   # 4, 5
                     CODETABLE.NCODES/4/4/4/4/4) # 5, 1
 
-class ScanDistinctFollowers(builder.BuilderContext):
+class ScanDistinctFollowers(builder.BuilderStrategy):
     """General purpose property optimizer for :py:class:`..partition.PartitionResult`
     that reduces the initial code set using case-equivalence, and may yield multiple
     results.
